@@ -39,7 +39,7 @@ class BooksModule(OcrModule):
     def process(self, context: ProcessingContext, uploads: list[bytes]) -> ModuleOutput:
         pages: list[PageOutput] = []
         confidences: list[float] = []
-        languages: list[str] = []
+        languages: list[tuple[str, int]] = []
         max_columns = 0
         title = None
         for content in uploads:
@@ -47,7 +47,7 @@ class BooksModule(OcrModule):
             reading = context.read(prepared.ocr_image)
             layout = analyze_layout(reading.boxes)
             max_columns = max(max_columns, layout.columns)
-            languages.append(reading.language)
+            languages.append((reading.language, sum(len(box.text) for box in reading.boxes)))
             if (confidence := mean_box_confidence(reading.boxes)) is not None:
                 confidences.append(confidence)
             if title is None:
@@ -72,7 +72,9 @@ class BooksModule(OcrModule):
             )
         full_text = "\n\n".join(page.text for page in pages)
         words = len(full_text.split())
-        language = max(set(languages), key=languages.count) if languages else None
+        language = max(
+            {code for code, _ in languages}, key=lambda code: sum(size for item, size in languages if item == code), default=None
+        )
         fields = {
             "title": FieldValue(title or f"Documento de {len(pages)} página(s)", None),
             "pages": FieldValue(str(len(pages)), 1.0),

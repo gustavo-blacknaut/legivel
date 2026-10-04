@@ -158,7 +158,7 @@ class CardsModule(OcrModule):
             fields={name: value for name, value in fields.items() if value.value},
             issues=issues,
             pages=[],
-            language=reading.language,
+            language=None,
             confidence=number_confidence,
             search_text=" ".join(filter(None, [brand, number[-4:] if number else None, holder])),
             card=CardOutput(brand, number[-4:] if number else None, holder, expiry, valid, number if valid else None),
