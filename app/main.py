@@ -13,11 +13,12 @@ from app.db.session import build_engine, build_session_factory
 from app.security.crypto import FileCipher
 from app.services.audit import current_ip
 from app.storage.encrypted_store import EncryptedFileStore
+from app.web.modules_routes import router as modules_router
 from app.web.routes import public_router, router
 
 MINIMUM_SECRET_LENGTH = 32
 CSRF_HEADER = "x-requested-with"
-CSRF_HEADER_VALUE = "green-ocr"
+CSRF_HEADER_VALUE = "lince"
 SAFE_METHODS = {"GET", "HEAD", "OPTIONS"}
 
 
@@ -44,8 +45,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or get_settings()
     cipher = FileCipher(settings.encryption_key)
     if len(settings.secret_key) < MINIMUM_SECRET_LENGTH:
-        raise MissingSecretKeyError(f"GREEN_OCR_SECRET_KEY precisa ter pelo menos {MINIMUM_SECRET_LENGTH} caracteres")
-    application = FastAPI(title="Registra", docs_url=None, redoc_url=None, openapi_url=None)
+        raise MissingSecretKeyError(f"LINCE_SECRET_KEY precisa ter pelo menos {MINIMUM_SECRET_LENGTH} caracteres")
+    application = FastAPI(title="Lince", docs_url=None, redoc_url=None, openapi_url=None)
     application.state.settings = settings
     application.state.session_factory = build_session_factory(build_engine(settings.database_url))
     application.state.store = EncryptedFileStore(settings.storage_dir, cipher)
@@ -53,6 +54,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     application.include_router(auth_router)
     application.include_router(router)
     application.include_router(public_router)
+    application.include_router(modules_router)
 
     @application.get("/health")
     def health() -> dict[str, str]:
@@ -78,7 +80,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     application.add_middleware(
         SessionMiddleware,
         secret_key=settings.secret_key,
-        session_cookie="green_ocr_session",
+        session_cookie="lince_session",
         max_age=settings.access_minutes * 60,
         same_site="strict",
         https_only=settings.secure_cookies,

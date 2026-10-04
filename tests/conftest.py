@@ -18,7 +18,7 @@ class FakeEngine:
 
 
 USERNAME = "operador"
-CSRF_HEADERS = {"X-Requested-With": "green-ocr"}
+CSRF_HEADERS = {"X-Requested-With": "lince"}
 PASSWORD = "senha-de-teste-123"
 
 

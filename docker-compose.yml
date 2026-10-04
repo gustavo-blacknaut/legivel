@@ -3,7 +3,7 @@ services:
     build: .
     env_file: .env
     ports:
-      - "${GREEN_OCR_BIND:-127.0.0.1}:${GREEN_OCR_PORT:-8090}:8000"
+      - "${LINCE_BIND:-127.0.0.1}:${LINCE_PORT:-8091}:8000"
     volumes:
       - ./data:/app/data
       - ./storage:/app/storage
@@ -14,7 +14,7 @@ services:
     build: .
     profiles: ["tests"]
     environment:
-      GREEN_OCR_ENCRYPTION_KEY: ""
+      LINCE_ENCRYPTION_KEY: ""
     volumes:
       - ocr_models:/home/greenocr/.paddlex
     command: ["sh", "-c", "ruff check . && pytest"]

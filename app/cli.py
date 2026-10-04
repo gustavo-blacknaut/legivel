@@ -38,9 +38,9 @@ def run_create_user(arguments: argparse.Namespace) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(prog="registra")
+    parser = argparse.ArgumentParser(prog="lince")
     commands = parser.add_subparsers(dest="command", required=True)
-    commands.add_parser("generate-key", help="Gera uma chave para GREEN_OCR_ENCRYPTION_KEY ou GREEN_OCR_SECRET_KEY")
+    commands.add_parser("generate-key", help="Gera uma chave para LINCE_ENCRYPTION_KEY ou LINCE_SECRET_KEY")
     user_parser = commands.add_parser("create-user", help="Cria um usuário ou redefine a senha de um existente")
     user_parser.add_argument("username")
     user_parser.add_argument("--generate", action="store_true", help="Gera uma senha aleatória e grava em arquivo")

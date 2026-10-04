@@ -15,7 +15,7 @@ def test_login_sets_refresh_cookie_and_refresh_restores_session(client):
     login(client)
     refresh_token = client.cookies.get(REFRESH_COOKIE)
     assert refresh_token
-    client.cookies.delete("green_ocr_session")
+    client.cookies.delete("lince_session")
     assert client.get("/api/overview").status_code == 401
     restored = client.post("/api/auth/refresh")
     assert restored.status_code == 200
@@ -50,7 +50,7 @@ def test_sessions_list_and_revoke_others(client):
     assert len(listed) == 2
     assert sum(item["current"] for item in listed) == 1
     assert client.post("/api/auth/sessions/revoke-others").json() == {"revoked": 1}
-    other.cookies.delete("green_ocr_session")
+    other.cookies.delete("lince_session")
     assert other.post("/api/auth/refresh").status_code == 401
 
 
@@ -122,8 +122,8 @@ def test_person_detail_lists_other_data(client):
 
 def test_timezone_setting(client):
     login(client)
-    assert client.get("/api/settings").json() == {"timezone": "America/Sao_Paulo"}
-    assert client.put("/api/settings", json={"timezone": "America/Manaus"}).json() == {"timezone": "America/Manaus"}
+    assert client.get("/api/settings").json()["timezone"] == "America/Sao_Paulo"
+    assert client.put("/api/settings", json={"timezone": "America/Manaus"}).json()["timezone"] == "America/Manaus"
     assert client.get("/api/settings").json()["timezone"] == "America/Manaus"
     assert client.put("/api/settings", json={"timezone": "Lua/Base"}).status_code == 400
     assert "America/Recife" in client.get("/api/settings/timezones").json()

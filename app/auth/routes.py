@@ -19,7 +19,7 @@ from app.web.schemas import Credentials, SessionOut, UserOut
 
 router = APIRouter(prefix="/api/auth")
 PUBLIC_API_PATHS = ("/api/auth/login", "/api/auth/me", "/api/auth/refresh", "/api/public/", "/health")
-REFRESH_COOKIE = "registra_refresh"
+REFRESH_COOKIE = "lince_refresh"
 REFRESH_PATH = "/api/auth"
 SessionDep = Annotated[Session, Depends(get_session)]
 

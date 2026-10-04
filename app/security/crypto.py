@@ -23,7 +23,7 @@ def generate_key() -> str:
 
 def decode_key(encoded_key: str) -> bytes:
     if not encoded_key:
-        raise EncryptionKeyError("GREEN_OCR_ENCRYPTION_KEY não definida")
+        raise EncryptionKeyError("LINCE_ENCRYPTION_KEY não definida")
     try:
         raw_key = base64.urlsafe_b64decode(encoded_key.encode())
     except (ValueError, TypeError) as error:

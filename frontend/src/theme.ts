@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 
 export type ThemePreference = "light" | "dark" | "system";
 
-const STORAGE_KEY = "registra:theme";
+const STORAGE_KEY = "lince:theme";
 const DARK_QUERY = "(prefers-color-scheme: dark)";
 
 function readPreference(): ThemePreference {

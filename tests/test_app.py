@@ -14,21 +14,21 @@ def clear_settings_cache():
 
 
 def test_app_refuses_to_start_without_encryption_key(monkeypatch):
-    monkeypatch.setenv("GREEN_OCR_ENCRYPTION_KEY", "")
+    monkeypatch.setenv("LINCE_ENCRYPTION_KEY", "")
     with pytest.raises(EncryptionKeyError):
         create_app()
 
 
 def test_app_refuses_to_start_without_secret_key(monkeypatch):
-    monkeypatch.setenv("GREEN_OCR_ENCRYPTION_KEY", generate_key())
-    monkeypatch.setenv("GREEN_OCR_SECRET_KEY", "short")
+    monkeypatch.setenv("LINCE_ENCRYPTION_KEY", generate_key())
+    monkeypatch.setenv("LINCE_SECRET_KEY", "short")
     with pytest.raises(MissingSecretKeyError):
         create_app()
 
 
 def test_health_endpoint_is_public(monkeypatch):
-    monkeypatch.setenv("GREEN_OCR_ENCRYPTION_KEY", generate_key())
-    monkeypatch.setenv("GREEN_OCR_SECRET_KEY", generate_key())
+    monkeypatch.setenv("LINCE_ENCRYPTION_KEY", generate_key())
+    monkeypatch.setenv("LINCE_SECRET_KEY", generate_key())
     response = TestClient(create_app()).get("/health")
     assert response.json() == {"status": "ok"}
 
@@ -39,9 +39,9 @@ def test_serves_single_page_app_with_client_side_routes(monkeypatch, tmp_path):
     (frontend / "index.html").write_text("<div id=root></div>", encoding="utf-8")
     (frontend / "assets" / "app.js").write_text("console.log(1)", encoding="utf-8")
     (frontend / "logo.png").write_bytes(b"png")
-    monkeypatch.setenv("GREEN_OCR_ENCRYPTION_KEY", generate_key())
-    monkeypatch.setenv("GREEN_OCR_SECRET_KEY", generate_key())
-    monkeypatch.setenv("GREEN_OCR_FRONTEND_DIR", str(frontend))
+    monkeypatch.setenv("LINCE_ENCRYPTION_KEY", generate_key())
+    monkeypatch.setenv("LINCE_SECRET_KEY", generate_key())
+    monkeypatch.setenv("LINCE_FRONTEND_DIR", str(frontend))
     client = TestClient(create_app())
     assert "id=root" in client.get("/documentos/5").text
     assert client.get("/assets/app.js").text == "console.log(1)"

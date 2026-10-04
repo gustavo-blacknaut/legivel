@@ -70,7 +70,7 @@ def seed_people(count: int, generator: random.Random) -> None:
 
 
 def seed_scanned(base_url: str, username: str, password: str, generator: random.Random, count: int) -> None:
-    client = httpx.Client(base_url=base_url, headers={"X-Requested-With": "green-ocr"}, timeout=600)
+    client = httpx.Client(base_url=base_url, headers={"X-Requested-With": "lince"}, timeout=600)
     client.post("/api/auth/login", json={"username": username, "password": password}).raise_for_status()
     for index in range(count):
         cpf = fictitious_cpf(generator)

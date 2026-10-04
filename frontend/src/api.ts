@@ -16,7 +16,7 @@ import type {
   Verification,
 } from "./types";
 
-export const UNAUTHORIZED_EVENT = "registra:unauthorized";
+export const UNAUTHORIZED_EVENT = "lince:unauthorized";
 const NO_RETRY_PATHS = ["/api/auth/login", "/api/auth/refresh", "/api/auth/logout", "/api/public/"];
 
 export class ApiError extends Error {
@@ -34,7 +34,7 @@ function refreshSession(): Promise<boolean> {
   refreshing ??= fetch("/api/auth/refresh", {
     method: "POST",
     credentials: "same-origin",
-    headers: { "X-Requested-With": "green-ocr" },
+    headers: { "X-Requested-With": "lince" },
   })
     .then((response) => response.ok)
     .catch(() => false)
@@ -46,7 +46,7 @@ function refreshSession(): Promise<boolean> {
 
 async function send(path: string, init: RequestInit): Promise<Response> {
   const headers = new Headers(init.headers);
-  headers.set("X-Requested-With", "green-ocr");
+  headers.set("X-Requested-With", "lince");
   if (init.body && !(init.body instanceof FormData)) {
     headers.set("Content-Type", "application/json");
   }
