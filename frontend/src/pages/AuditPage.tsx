@@ -20,6 +20,7 @@ const ACTION_LABELS: Record<string, string> = {
   delete: "Apagou",
   revoke: "Revogou",
   upload: "Recebeu envio",
+  export: "Exportou",
 };
 const ENTITY_LABELS: Record<string, string> = {
   document: "Documento",
@@ -29,13 +30,17 @@ const ENTITY_LABELS: Record<string, string> = {
   settings: "Configurações",
   session: "Sessões",
   scan_link: "Link de envio",
+  "record:cards": "Cartão",
+  "record:books": "Texto",
+  "record:scanner": "Digitalização",
+  "record:finance": "Financeiro",
 };
 const ENTITY_ROUTES: Record<string, string> = { document: "/documentos", person: "/pessoas" };
 const FILTER_KEYS = ["action", "entity", "from", "to"];
 
 function EntityReference({ entry }: { entry: AuditEntry }) {
   const label = ENTITY_LABELS[entry.entity] ?? entry.entity;
-  const route = ENTITY_ROUTES[entry.entity];
+  const route = ENTITY_ROUTES[entry.entity] ?? (entry.entity.startsWith("record:") ? "/registros" : undefined);
   if (entry.entity_id === null) return <>{label}</>;
   if (route && entry.action !== "delete") {
     return (

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { api } from "../api";
 import { useAuth } from "../auth";
 import { PageHead } from "../components/AppShell";
+import { ModuleSettings } from "../components/ModuleSettings";
 import { useToast } from "../components/Toast";
 import { describeDevice, formatDateTime, getTimeZone, setTimeZone } from "../format";
 import { useTheme, type ThemePreference } from "../theme";
@@ -108,6 +109,8 @@ export function SettingsPage() {
             </div>
           </div>
         </section>
+
+        <ModuleSettings />
 
         <section className="panel">
           <div className="panel-head">

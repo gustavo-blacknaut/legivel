@@ -3,7 +3,14 @@ export type ConfidenceLevel = "high" | "medium" | "low" | "unknown";
 const HIGH_CONFIDENCE = 0.9;
 const MEDIUM_CONFIDENCE = 0.75;
 
-export const DOCUMENT_TYPE_LABELS: Record<string, string> = { rg: "RG", cnh: "CNH", cpf: "CPF" };
+export const DOCUMENT_TYPE_LABELS: Record<string, string> = {
+  rg: "RG",
+  cnh: "CNH",
+  cpf: "CPF",
+  passport: "Passaporte",
+  voter: "Título",
+  certificate: "Certidão",
+};
 
 export const STATUS_LABELS: Record<string, string> = {
   pending_review: "Pendente de revisão",

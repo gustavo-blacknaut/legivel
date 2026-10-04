@@ -1,8 +1,8 @@
-import "@fontsource/ibm-plex-mono/400.css";
-import "@fontsource/ibm-plex-mono/500.css";
-import "@fontsource/ibm-plex-sans/400.css";
-import "@fontsource/ibm-plex-sans/500.css";
-import "@fontsource/ibm-plex-sans/600.css";
+import "@fontsource/source-code-pro/400.css";
+import "@fontsource/source-code-pro/500.css";
+import "@fontsource/source-sans-3/400.css";
+import "@fontsource/source-sans-3/500.css";
+import "@fontsource/source-sans-3/600.css";
 import { StrictMode, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
@@ -17,7 +17,10 @@ import { DocumentsPage } from "./pages/DocumentsPage";
 import { LoginPage } from "./pages/LoginPage";
 import { PeoplePage } from "./pages/PeoplePage";
 import { PersonPage } from "./pages/PersonPage";
+import { ModulePage } from "./pages/ModulePage";
 import { PublicScanPage } from "./pages/PublicScanPage";
+import { RecordPage } from "./pages/RecordPage";
+import { SearchPage } from "./pages/SearchPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { UploadPage } from "./pages/UploadPage";
 import "./styles.css";
@@ -50,7 +53,10 @@ function App() {
         <Route path="/novo" element={<UploadPage />} />
         <Route path="/auditoria" element={<AuditPage />} />
         <Route path="/configuracoes" element={<SettingsPage />} />
-        <Route path="*" element={<Navigate to="/pessoas" replace />} />
+        <Route path="/busca" element={<SearchPage />} />
+        <Route path="/modulos/:key" element={<ModulePage />} />
+        <Route path="/registros/:id" element={<RecordPage />} />
+        <Route path="*" element={<Navigate to="/busca" replace />} />
       </Routes>
     </AppShell>
   );

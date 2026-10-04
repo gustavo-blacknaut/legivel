@@ -1,11 +1,16 @@
 import {
+  BookOpen,
+  CreditCard,
   FilePlus2,
   Files,
   LogOut,
   Menu,
   PanelLeftClose,
   PanelLeftOpen,
+  Receipt,
+  ScanLine,
   ScrollText,
+  Search,
   Settings,
   Users,
   X,
@@ -17,15 +22,22 @@ import { useAuth } from "../auth";
 
 type NavEntry = { to: string; label: string; icon: LucideIcon };
 
-const PRIMARY: NavEntry[] = [
+const SEARCH: NavEntry[] = [{ to: "/busca", label: "Busca", icon: Search }];
+const IDENTITY: NavEntry[] = [
   { to: "/pessoas", label: "Pessoas", icon: Users },
   { to: "/documentos", label: "Documentos", icon: Files },
   { to: "/novo", label: "Novo documento", icon: FilePlus2 },
 ];
-const SECONDARY: NavEntry[] = [
+const MODULES: NavEntry[] = [
+  { to: "/modulos/cards", label: "Cartões", icon: CreditCard },
+  { to: "/modulos/books", label: "Livros e textos", icon: BookOpen },
+  { to: "/modulos/scanner", label: "Digitalização", icon: ScanLine },
+  { to: "/modulos/finance", label: "Financeiro", icon: Receipt },
+];
+const SYSTEM: NavEntry[] = [
   { to: "/auditoria", label: "Auditoria", icon: ScrollText },
 ];
-const COLLAPSED_KEY = "registra:sidebar-collapsed";
+const COLLAPSED_KEY = "lince:sidebar-collapsed";
 
 function readCollapsed(): boolean {
   try {
@@ -39,7 +51,7 @@ export function Brand({ compact = false }: { compact?: boolean }) {
   return (
     <span className="brand">
       <img src="/favicon.svg" alt="" width={compact ? 26 : 28} height={compact ? 26 : 28} />
-      <span className="brand-name">Registra</span>
+      <span className="brand-name">Lince</span>
     </span>
   );
 }
@@ -87,7 +99,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className={className}>
       <aside className="sidebar" aria-label="Navegação principal">
         <div className="sidebar-head">
-          <NavLink to="/pessoas" aria-label="Registra, página inicial">
+          <NavLink to="/busca" aria-label="Lince, página inicial">
             <Brand />
           </NavLink>
           <button
@@ -104,12 +116,19 @@ export function AppShell({ children }: { children: ReactNode }) {
           </button>
         </div>
         <nav className="nav">
-          <span className="nav-section">Cadastro</span>
-          {PRIMARY.map((entry) => (
+          {SEARCH.map((entry) => (
+            <NavItem key={entry.to} entry={entry} collapsed={collapsed} />
+          ))}
+          <span className="nav-section">Identidade</span>
+          {IDENTITY.map((entry) => (
+            <NavItem key={entry.to} entry={entry} collapsed={collapsed} />
+          ))}
+          <span className="nav-section">Módulos</span>
+          {MODULES.map((entry) => (
             <NavItem key={entry.to} entry={entry} collapsed={collapsed} />
           ))}
           <span className="nav-section">Sistema</span>
-          {SECONDARY.map((entry) => (
+          {SYSTEM.map((entry) => (
             <NavItem key={entry.to} entry={entry} collapsed={collapsed} />
           ))}
         </nav>

@@ -117,6 +117,10 @@ export type Verification = {
 };
 
 export type Settings = {
+  languages: string[];
+  default_language: string;
+  store_card_numbers: boolean;
+  card_key_configured: boolean;
   timezone: string;
 };
 
@@ -148,4 +152,82 @@ export type PublicLink = {
   label: string | null;
   state: LinkState;
   expires_at: string;
+};
+
+export type ModuleInfo = {
+  key: string;
+  name: string;
+  description: string;
+  icon: string;
+  multi_page: boolean;
+  max_pages: number;
+  page_labels: string[];
+  exports: string[];
+  kinds: Record<string, string>;
+};
+
+export type LanguageInfo = {
+  code: string;
+  name: string;
+  pack: string;
+};
+
+export type RecordSummary = {
+  id: number;
+  module: string;
+  kind: string | null;
+  title: string | null;
+  status: DocumentStatus;
+  language: string | null;
+  confidence: number | null;
+  page_count: number;
+  created_at: string;
+  thumbnail_url: string | null;
+};
+
+export type RecordField = {
+  name: string;
+  label: string;
+  kind: string;
+  value: string;
+  confidence: number | null;
+  issues: string[];
+};
+
+export type RecordPageInfo = {
+  id: number;
+  number: number;
+  thumbnail_url: string | null;
+  full_url: string | null;
+  text: string;
+  columns: number | null;
+};
+
+export type CardInfo = {
+  brand: string | null;
+  last4: string | null;
+  holder_name: string | null;
+  expiry: string | null;
+  luhn_valid: boolean;
+  number_stored: boolean;
+};
+
+export type RecordDetail = RecordSummary & {
+  module_name: string;
+  kind_label: string | null;
+  fields: RecordField[];
+  issues: { field: string; code: string; message: string }[];
+  pages: RecordPageInfo[];
+  exports: string[];
+  card: CardInfo | null;
+};
+
+export type SearchHit = {
+  module: string;
+  id: number;
+  title: string;
+  subtitle: string;
+  status: DocumentStatus;
+  created_at: string;
+  url: string;
 };
