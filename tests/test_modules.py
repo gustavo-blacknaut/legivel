@@ -73,6 +73,7 @@ def test_card_module_never_keeps_cvv_full_number_or_image(client):
 
 
 def test_card_full_number_is_encrypted_only_when_enabled(client):
+    client.app_state.settings.card_encryption_key = ""
     login(client)
     assert client.put("/api/settings", json={"store_card_numbers": True}).status_code == 400
     client.app_state.settings.card_encryption_key = generate_key()

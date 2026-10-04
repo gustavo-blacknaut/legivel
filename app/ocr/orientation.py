@@ -46,17 +46,34 @@ def downscale(image: np.ndarray, long_side: int) -> np.ndarray:
     return image if scale >= 1 else cv2.resize(image, None, fx=scale, fy=scale, interpolation=cv2.INTER_AREA)
 
 
-def detect_rotation(engine: OcrEngine, image: np.ndarray) -> int:
-    probe = downscale(image, PROBE_LONG_SIDE)
-    best_rotation, best_score = 0, -1.0
-    for rotation in ROTATIONS:
-        boxes = engine.read(rotate(probe, rotation))
+def lines_are_vertical(boxes: list[TextBox]) -> bool:
+    multi_char = [box for box in boxes if len(box.text.strip()) >= 3]
+    if not multi_char:
+        return False
+    vertical = sum(1 for box in multi_char if (box.y1 - box.y0) > (box.x1 - box.x0) * 1.3)
+    return vertical > len(multi_char) / 2
+
+
+def best_of(engine: OcrEngine, probe: np.ndarray, rotations: tuple[int, ...], first_boxes: list[TextBox] | None = None) -> int:
+    best_rotation, best_score = rotations[0], -1.0
+    for rotation in rotations:
+        boxes = first_boxes if rotation == rotations[0] and first_boxes is not None else engine.read(rotate(probe, rotation))
         score = reading_score(boxes)
         if score > best_score:
             best_rotation, best_score = rotation, score
-        if is_confident(boxes) and rotation in (0, 180) and best_rotation == rotation:
+        if is_confident(boxes) and best_rotation == rotation:
             break
     return best_rotation
+
+
+def detect_rotation(engine: OcrEngine, image: np.ndarray) -> int:
+    probe = downscale(image, PROBE_LONG_SIDE)
+    upright_boxes = engine.read(probe)
+    if is_confident(upright_boxes):
+        return 0
+    if lines_are_vertical(upright_boxes):
+        return best_of(engine, probe, (90, 270))
+    return best_of(engine, probe, (0, 180), upright_boxes)
 
 
 def read_with_best_orientation(engine: OcrEngine, image: np.ndarray) -> OrientedReading:

@@ -4,8 +4,15 @@ import numpy as np
 
 from app.ocr.base import TextBox
 
-LATIN_MODEL = "latin_PP-OCRv5_mobile_rec"
-PACK_LANG = {"cyrillic": "ru", "chinese": "ch", "japanese": "japan", "korean": "korean", "arabic": "ar", "devanagari": "hi"}
+RECOGNITION_MODELS = {
+    "latin": "latin_PP-OCRv5_mobile_rec",
+    "cyrillic": "eslav_PP-OCRv5_mobile_rec",
+    "chinese": "PP-OCRv5_mobile_rec",
+    "japanese": "PP-OCRv5_mobile_rec",
+    "korean": "korean_PP-OCRv5_mobile_rec",
+    "arabic": "arabic_PP-OCRv5_mobile_rec",
+    "devanagari": "devanagari_PP-OCRv5_mobile_rec",
+}
 
 
 class PaddleOcrEngine:
@@ -21,10 +28,9 @@ class PaddleOcrEngine:
     def _create_reader(detection_side_limit: int, device: str, pack: str):
         from paddleocr import PaddleOCR
 
-        recognition = {"text_recognition_model_name": LATIN_MODEL} if pack == "latin" else {"lang": PACK_LANG[pack]}
         return PaddleOCR(
             text_detection_model_name="PP-OCRv5_mobile_det",
-            **recognition,
+            text_recognition_model_name=RECOGNITION_MODELS[pack],
             text_det_limit_type="max",
             text_det_limit_side_len=detection_side_limit,
             use_doc_orientation_classify=False,

@@ -5,8 +5,7 @@ from dataclasses import dataclass, field
 import numpy as np
 
 from app.ocr.base import OcrEngine, TextBox
-from app.ocr.languages import AUTO, choose_language
-from app.ocr.orientation import read_with_best_orientation
+from app.ocr.languages import AUTO, read_any_language
 
 
 @dataclass(frozen=True)
@@ -71,10 +70,8 @@ class ProcessingContext:
     options: dict = field(default_factory=dict)
 
     def read(self, image: np.ndarray) -> PageReading:
-        choice = choose_language(self.engine_for_pack, image, self.language, self.enabled_languages)
-        reading = read_with_best_orientation(self.engine_for_pack(choice.pack), image)
-        return PageReading(reading.image, reading.boxes, choice.language)
-
+        reading = read_any_language(self.engine_for_pack, image, self.language, self.enabled_languages)
+        return PageReading(reading.image, reading.boxes, reading.language)
 
 def mean_box_confidence(boxes: list[TextBox]) -> float | None:
     return sum(box.confidence for box in boxes) / len(boxes) if boxes else None

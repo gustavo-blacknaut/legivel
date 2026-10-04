@@ -4,12 +4,11 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from app.ocr.base import OcrEngine, TextBox
-from app.ocr.orientation import downscale, mean_confidence, reading_score
+from app.ocr.base import TextBox
+from app.ocr.orientation import ROTATIONS, downscale, mean_confidence, reading_score, rotate
 
 AUTO = "auto"
 PROBE_LONG_SIDE = 1100
-CONFIDENT_LATIN = 0.8
 
 
 @dataclass(frozen=True)
@@ -212,28 +211,69 @@ class LanguageChoice:
     pack: str
 
 
-def choose_language(engine_for_pack, image: np.ndarray, requested: str, enabled: list[str]) -> LanguageChoice:
-    if requested != AUTO and requested in LANGUAGES:
-        return LanguageChoice(requested, LANGUAGES[requested].pack)
+SCRIPT_RANGES = {
+    "cyrillic": ((0x0400, 0x04FF),),
+    "chinese": ((0x4E00, 0x9FFF),),
+    "japanese": ((0x3040, 0x30FF), (0x4E00, 0x9FFF)),
+    "korean": ((0xAC00, 0xD7AF), (0x1100, 0x11FF)),
+    "arabic": ((0x0600, 0x06FF), (0x0750, 0x077F)),
+    "devanagari": ((0x0900, 0x097F),),
+}
+MINIMUM_SCRIPT_SHARE = 0.5
+MINIMUM_SCRIPT_CONFIDENCE = 0.6
+
+
+def script_share(text: str, pack: str) -> float:
+    letters = [char for char in text if char.isalpha()]
+    if not letters:
+        return 0.0
+    ranges = SCRIPT_RANGES.get(pack, ())
+    inside = sum(1 for char in letters if any(start <= ord(char) <= end for start, end in ranges))
+    return inside / len(letters)
+
+
+@dataclass(frozen=True)
+class LanguageReading:
+    image: np.ndarray
+    boxes: list[TextBox]
+    language: str
+
+
+CONFIDENT_READING = 0.85
+CONFIDENT_CHARACTERS = 20
+
+
+def is_confident_reading(boxes: list[TextBox]) -> bool:
+    return mean_confidence(boxes) >= CONFIDENT_READING and sum(len(box.text) for box in boxes) >= CONFIDENT_CHARACTERS
+
+
+def pack_score(pack: str, boxes: list[TextBox]) -> float:
+    if pack != "latin":
+        text = " ".join(box.text for box in boxes)
+        if script_share(text, pack) < MINIMUM_SCRIPT_SHARE or mean_confidence(boxes) < MINIMUM_SCRIPT_CONFIDENCE:
+            return 0.0
+    return reading_score(boxes)
+
+
+def read_any_language(engine_for_pack, image: np.ndarray, requested: str, enabled: list[str]) -> LanguageReading:
+    fixed = requested != AUTO and requested in LANGUAGES
+    packs = [LANGUAGES[requested].pack] if fixed else packs_for(enabled)
     probe = downscale(image, PROBE_LONG_SIDE)
-    packs = packs_for(enabled)
-    best_pack, best_boxes, best_score = packs[0], [], -1.0
-    for pack in packs:
-        boxes: list[TextBox] = engine_for_pack(pack).read(probe)
-        score = reading_score(boxes)
-        if score > best_score:
-            best_pack, best_boxes, best_score = pack, boxes, score
-        if pack == "latin" and mean_confidence(boxes) >= CONFIDENT_LATIN and len(boxes) >= 3:
+    best_pack, best_rotation, best_score, best_boxes = packs[0], 0, -1.0, []
+    for rotation in ROTATIONS:
+        for pack in packs:
+            boxes = engine_for_pack(pack).read(rotate(probe, rotation))
+            score = pack_score(pack, boxes)
+            if score > best_score:
+                best_pack, best_rotation, best_score, best_boxes = pack, rotation, score, boxes
+        if best_rotation == rotation and rotation in (0, 180) and best_score > 0 and is_confident_reading(best_boxes):
             break
-    if best_pack == "latin":
-        latin_enabled = [code for code in enabled if LANGUAGES.get(code) and LANGUAGES[code].pack == "latin"] or ["pt"]
-        text = " ".join(box.text for box in best_boxes)
-        return LanguageChoice(detect_latin_language(text, latin_enabled), "latin")
-    return LanguageChoice(PACK_DEFAULT_LANGUAGE[best_pack], best_pack)
-
-
-def engine_selector(factory, engine_name: str, device: str):
-    def select(pack: str) -> OcrEngine:
-        return factory(engine_name, device, pack)
-
-    return select
+    oriented = rotate(image, best_rotation)
+    boxes = engine_for_pack(best_pack).read(oriented)
+    if fixed:
+        return LanguageReading(oriented, boxes, requested)
+    if best_pack != "latin":
+        return LanguageReading(oriented, boxes, PACK_DEFAULT_LANGUAGE[best_pack])
+    latin_enabled = [code for code in enabled if LANGUAGES.get(code) and LANGUAGES[code].pack == "latin"] or ["pt"]
+    language = detect_latin_language(" ".join(box.text for box in boxes), latin_enabled)
+    return LanguageReading(oriented, boxes, language)
