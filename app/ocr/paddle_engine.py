@@ -4,22 +4,27 @@ import numpy as np
 
 from app.ocr.base import TextBox
 
+LATIN_MODEL = "latin_PP-OCRv5_mobile_rec"
+PACK_LANG = {"cyrillic": "ru", "chinese": "ch", "japanese": "japan", "korean": "korean", "arabic": "ar", "devanagari": "hi"}
+
 
 class PaddleOcrEngine:
     name = "paddle"
 
-    def __init__(self, detection_side_limit: int = 1280, device: str = "cpu"):
+    def __init__(self, detection_side_limit: int = 1280, device: str = "cpu", pack: str = "latin"):
         self._worker = ThreadPoolExecutor(max_workers=1, thread_name_prefix="paddle-ocr")
-        self._reader = self._worker.submit(self._create_reader, detection_side_limit, device).result()
+        self._reader = self._worker.submit(self._create_reader, detection_side_limit, device, pack).result()
+        self.pack = pack
         self.device = device
 
     @staticmethod
-    def _create_reader(detection_side_limit: int, device: str):
+    def _create_reader(detection_side_limit: int, device: str, pack: str):
         from paddleocr import PaddleOCR
 
+        recognition = {"text_recognition_model_name": LATIN_MODEL} if pack == "latin" else {"lang": PACK_LANG[pack]}
         return PaddleOCR(
             text_detection_model_name="PP-OCRv5_mobile_det",
-            text_recognition_model_name="latin_PP-OCRv5_mobile_rec",
+            **recognition,
             text_det_limit_type="max",
             text_det_limit_side_len=detection_side_limit,
             use_doc_orientation_classify=False,
