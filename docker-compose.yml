@@ -1,0 +1,23 @@
+services:
+  app:
+    build: .
+    env_file: .env
+    ports:
+      - "${GREEN_OCR_BIND:-127.0.0.1}:${GREEN_OCR_PORT:-8090}:8000"
+    volumes:
+      - ./data:/app/data
+      - ./storage:/app/storage
+      - ocr_models:/home/greenocr/.paddlex
+    restart: unless-stopped
+
+  tests:
+    build: .
+    profiles: ["tests"]
+    environment:
+      GREEN_OCR_ENCRYPTION_KEY: ""
+    volumes:
+      - ocr_models:/home/greenocr/.paddlex
+    command: ["sh", "-c", "ruff check . && pytest"]
+
+volumes:
+  ocr_models:
