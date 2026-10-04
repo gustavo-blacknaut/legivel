@@ -23,7 +23,17 @@ from app.services.documents import (
 from app.services.people import PersonUpdateError, update_person, verify_person
 from app.services.queries import MAX_PAGE_SIZE, ListFilters, list_audit, list_documents, list_people
 from app.services.scan_links import LinkState, create_link, find_by_token, link_state, list_links, revoke_link, submit_to_link
-from app.services.settings import get_timezone, set_timezone, valid_timezones
+from app.services.settings import (
+    get_card_storage,
+    get_default_language,
+    get_languages,
+    get_timezone,
+    set_card_storage,
+    set_default_language,
+    set_languages,
+    set_timezone,
+    valid_timezones,
+)
 from app.storage.encrypted_store import EncryptedFileStore
 from app.web.deps import get_engine, get_session, get_store
 from app.web.schemas import (
@@ -299,20 +309,45 @@ def verify(request: Request, person_id: int, session: SessionDep) -> Verificatio
     return VerificationOut(changes=result.changes, problems=result.problems, person=person_detail(person))
 
 
+def settings_out(request: Request, session: Session) -> SettingsOut:
+    return SettingsOut(
+        timezone=get_timezone(session),
+        languages=get_languages(session),
+        default_language=get_default_language(session),
+        store_card_numbers=get_card_storage(session),
+        card_key_configured=bool(request.app.state.settings.card_encryption_key),
+    )
+
+
 @router.get("/settings")
-def read_settings(session: SessionDep) -> SettingsOut:
-    return SettingsOut(timezone=get_timezone(session))
+def read_settings(request: Request, session: SessionDep) -> SettingsOut:
+    return settings_out(request, session)
 
 
 @router.put("/settings")
 def save_settings(request: Request, payload: SettingsIn, session: SessionDep) -> SettingsOut:
+    changes = []
     try:
-        set_timezone(session, payload.timezone)
+        if payload.timezone is not None:
+            set_timezone(session, payload.timezone)
+            changes.append(f"fuso horário: {payload.timezone}")
+        if payload.languages is not None:
+            set_languages(session, payload.languages)
+            changes.append(f"idiomas: {', '.join(payload.languages)}")
+        if payload.default_language is not None:
+            set_default_language(session, payload.default_language)
+            changes.append(f"idioma padrão: {payload.default_language}")
+        if payload.store_card_numbers is not None:
+            if payload.store_card_numbers and not request.app.state.settings.card_encryption_key:
+                raise ValueError("Defina LINCE_CARD_ENCRYPTION_KEY no servidor antes de ativar")
+            set_card_storage(session, payload.store_card_numbers)
+            changes.append(f"guardar número de cartão: {'sim' if payload.store_card_numbers else 'não'}")
     except ValueError as error:
+        session.rollback()
         raise HTTPException(400, str(error)) from error
-    record(session, current_user_id(request), "update", "settings", None, f"fuso horário: {payload.timezone}")
+    record(session, current_user_id(request), "update", "settings", None, "; ".join(changes))
     session.commit()
-    return SettingsOut(timezone=payload.timezone)
+    return settings_out(request, session)
 
 
 @router.get("/settings/timezones")

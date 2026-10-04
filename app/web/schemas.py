@@ -261,10 +261,17 @@ class VerificationOut(BaseModel):
 
 class SettingsOut(BaseModel):
     timezone: str
+    languages: list[str]
+    default_language: str
+    store_card_numbers: bool
+    card_key_configured: bool
 
 
 class SettingsIn(BaseModel):
-    timezone: str
+    timezone: str | None = None
+    languages: list[str] | None = None
+    default_language: str | None = None
+    store_card_numbers: bool | None = None
 
 
 class SessionOut(BaseModel):
