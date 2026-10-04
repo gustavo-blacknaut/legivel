@@ -565,3 +565,4 @@ input[type="date"] { min-width: 0; }
   .result > .tag, .result > .thumb { display: none; }
   .card-visual { margin: var(--space-3); padding: var(--space-4); }
 }
+.check input, input[type="checkbox"], input[type="radio"] { accent-color: var(--color-accent); }
