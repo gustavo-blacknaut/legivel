@@ -11,12 +11,43 @@ from app.validators.cpf import calculate_check_digits
 from tests.synthetic import encode_jpeg, photograph, render_rg_back
 
 FIRST_NAMES = (
-    "ANA", "BRUNO", "CARLA", "DANIEL", "EDUARDA", "FELIPE", "GABRIELA", "HUGO", "ISABELA", "JOAO", "KARINA",
-    "LUCAS", "MARIANA", "NATAN", "OLIVIA", "PEDRO", "RAFAELA", "SAMUEL", "TATIANA", "VINICIUS",
+    "ANA",
+    "BRUNO",
+    "CARLA",
+    "DANIEL",
+    "EDUARDA",
+    "FELIPE",
+    "GABRIELA",
+    "HUGO",
+    "ISABELA",
+    "JOAO",
+    "KARINA",
+    "LUCAS",
+    "MARIANA",
+    "NATAN",
+    "OLIVIA",
+    "PEDRO",
+    "RAFAELA",
+    "SAMUEL",
+    "TATIANA",
+    "VINICIUS",
 )
 LAST_NAMES = (
-    "ALMEIDA", "BARBOSA", "CARDOSO", "DIAS", "FERREIRA", "GOMES", "LIMA", "MARTINS", "NASCIMENTO", "OLIVEIRA",
-    "PEREIRA", "RIBEIRO", "SANTOS", "SOUZA", "TEIXEIRA",
+    "ALMEIDA",
+    "BARBOSA",
+    "CARDOSO",
+    "DIAS",
+    "FERREIRA",
+    "GOMES",
+    "LIMA",
+    "MARTINS",
+    "NASCIMENTO",
+    "OLIVEIRA",
+    "PEREIRA",
+    "RIBEIRO",
+    "SANTOS",
+    "SOUZA",
+    "TEIXEIRA",
 )
 STATUS_WEIGHTS = (DocumentStatus.REVIEWED, DocumentStatus.REVIEWED, DocumentStatus.PENDING_REVIEW)
 CITIES = ("CAMPINAS-SP", "BELO HORIZONTE-MG", "NOVA LIMA-MG", "CURITIBA-PR", "RECIFE-PE", "SALVADOR-BA")

@@ -28,3 +28,6 @@ htmlcov/
 Thumbs.db
 
 /docs/screenshots/qa/
+
+/docs/screenshots/qa/
+*.log
