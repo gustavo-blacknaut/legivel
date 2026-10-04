@@ -21,4 +21,4 @@ def available_parsers() -> list[DocumentParser]:
 
 
 def load_builtin_parsers() -> None:
-    from app.parsers import cnh, cpf, rg  # noqa: F401
+    from app.parsers import certificate, cnh, cpf, passport, rg, voter  # noqa: F401
