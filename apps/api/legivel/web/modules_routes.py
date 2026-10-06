@@ -23,6 +23,7 @@ from legivel.services.records import CardPolicy, create_record, delete_record, u
 from legivel.services.settings import RuntimeSettings
 from legivel.storage.file_store import FileStore
 from legivel.web.deps import RuntimeDep, SessionDep, get_store, pack_engines, permitted
+from legivel.web.routes import read_image
 from legivel.web.schemas import PageOut
 
 router = APIRouter(prefix="/api", tags=["records"])
@@ -293,13 +294,7 @@ async def upload_record(
         raise HTTPException(400, "Envie pelo menos uma imagem.")
     if len(files) > selected.max_pages:
         raise HTTPException(400, f"Este módulo aceita até {selected.max_pages} imagem(ns).")
-    max_bytes = runtime.upload_max_mb * 1024 * 1024
-    uploads = []
-    for upload in files:
-        content = await upload.read(max_bytes + 1)
-        if len(content) > max_bytes:
-            raise HTTPException(413, "Imagem maior que o limite permitido")
-        uploads.append(content)
+    uploads = [await read_image(runtime, upload) for upload in files]
     try:
         parsed_options = json.loads(options or "{}")
     except json.JSONDecodeError as error:

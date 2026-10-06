@@ -212,3 +212,12 @@ def test_languages_follow_the_reading_settings(client):
     client.put("/api/settings", json={"values": {"reading_languages": "pt,ja"}})
     assert [item["code"] for item in client.get("/api/languages").json()] == ["pt", "ja"]
     assert client.put("/api/settings", json={"values": {"reading_languages": "pt,xx"}}).status_code == 400
+
+
+def test_record_upload_follows_the_accepted_formats(client):
+    login(client)
+    use_boxes(client, [box("Relatório anual", 40, 40, 900, 90)])
+    client.put("/api/settings", json={"values": {"upload_formats": "png"}})
+    assert upload(client, "books").status_code == 415
+    files = [("pages", ("texto.jpg", b"isto nao e uma imagem", "image/jpeg"))]
+    assert client.post("/api/records", data={"module": "books"}, files=files).status_code == 400

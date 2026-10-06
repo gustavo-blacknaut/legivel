@@ -108,22 +108,26 @@ def load_document(session: Session, document_id: int) -> Document:
     return document
 
 
-async def read_sides(runtime: RuntimeSettings, front: UploadFile | None, back: UploadFile | None) -> list[UploadedSide]:
+async def read_image(runtime: RuntimeSettings, upload: UploadFile) -> bytes:
     max_bytes = runtime.upload_max_mb * 1024 * 1024
+    content = await upload.read(max_bytes + 1)
+    if len(content) > max_bytes:
+        raise HTTPException(413, f"Imagem maior que o limite de {runtime.upload_max_mb} MB")
+    detected = detect_format(content)
+    if detected is None:
+        raise HTTPException(400, "Arquivo não é uma imagem válida")
+    if detected not in runtime.allowed_formats:
+        accepted = ", ".join(FORMAT_LABELS[item] for item in runtime.allowed_formats)
+        raise HTTPException(415, f"Formato {FORMAT_LABELS[detected]} não aceito. Formatos aceitos: {accepted}.")
+    return content
+
+
+async def read_sides(runtime: RuntimeSettings, front: UploadFile | None, back: UploadFile | None) -> list[UploadedSide]:
     sides = []
     for side, upload in ((ImageSide.FRONT, front), (ImageSide.BACK, back)):
         if upload is None or not upload.filename:
             continue
-        content = await upload.read(max_bytes + 1)
-        if len(content) > max_bytes:
-            raise HTTPException(413, f"Imagem maior que o limite de {runtime.upload_max_mb} MB")
-        detected = detect_format(content)
-        if detected is None:
-            raise HTTPException(400, "Arquivo não é uma imagem válida")
-        if detected not in runtime.allowed_formats:
-            accepted = ", ".join(FORMAT_LABELS[item] for item in runtime.allowed_formats)
-            raise HTTPException(415, f"Formato {FORMAT_LABELS[detected]} não aceito. Formatos aceitos: {accepted}.")
-        sides.append(UploadedSide(side, content))
+        sides.append(UploadedSide(side, await read_image(runtime, upload)))
     if not sides:
         raise HTTPException(400, NO_IMAGE_MESSAGE)
     return sides
