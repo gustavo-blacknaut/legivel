@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { DeleteDialog } from "@/components/DeleteDialog";
-import { LIST_KEYS, ListFilters, documentTypeLabel } from "@/components/ListFilters";
+import { LIST_KEYS, ListFilters, useDocumentTypeLabel } from "@/components/ListFilters";
 import { EmptyState, ListBar, LoadMore, SkeletonRows } from "@/components/ListState";
 import { PageHead } from "@/components/PageHead";
 import page from "@/components/Page.module.css";
@@ -19,6 +19,7 @@ import { useSession } from "@/lib/session";
 
 export default function PeoplePage() {
   const { t, format } = useLocale();
+  const typeLabel = useDocumentTypeLabel();
   const { can } = useSession();
   const router = useRouter();
   const toast = useToast();
@@ -84,7 +85,7 @@ export default function PeoplePage() {
                     </Link>
                   </td>
                   <td className={`${page.meta} mono`}>{formatCpf(person.cpf) || "—"}</td>
-                  <td className={`${page.meta} ${page.optional}`}>{person.doc_types.map(documentTypeLabel).join(" · ") || "—"}</td>
+                  <td className={`${page.meta} ${page.optional}`}>{person.doc_types.map(typeLabel).join(" · ") || "—"}</td>
                   <td className={page.meta}>
                     <StatusLabel status={person.status} />
                   </td>

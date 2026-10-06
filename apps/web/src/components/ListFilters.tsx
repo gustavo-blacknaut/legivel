@@ -8,7 +8,7 @@ import styles from "./ListFilters.module.css";
 export const LIST_KEYS = ["q", "doc_type", "status", "from", "to", "sort", "order"] as const;
 export type ListKey = (typeof LIST_KEYS)[number];
 const SEARCH_DEBOUNCE_MS = 300;
-const DOCUMENT_TYPES = { rg: "RG", cnh: "CNH", cpf: "CPF" };
+const DOCUMENT_TYPES = ["rg", "cnh", "cpf", "passport", "voter", "certificate"];
 
 type Controls<K extends string> = { values: Record<K, string>; update: (key: K, value: string) => void };
 
@@ -99,9 +99,9 @@ export function ListFilters({ controls, dateLabel }: ListFiltersProps) {
         <span className="visually-hidden">{t.documents.columns.type}</span>
         <select value={values.doc_type} onChange={(event) => update("doc_type", event.target.value)}>
           <option value="">{t.filters.allTypes}</option>
-          {Object.entries(DOCUMENT_TYPES).map(([value, label]) => (
+          {DOCUMENT_TYPES.map((value) => (
             <option key={value} value={value}>
-              {label}
+              {t.filters.types[value]}
             </option>
           ))}
         </select>
@@ -140,6 +140,7 @@ export function ListFilters({ controls, dateLabel }: ListFiltersProps) {
   );
 }
 
-export function documentTypeLabel(type: string): string {
-  return DOCUMENT_TYPES[type as keyof typeof DOCUMENT_TYPES] ?? type.toUpperCase();
+export function useDocumentTypeLabel(): (type: string) => string {
+  const t = useT();
+  return (type) => t.filters.types[type] ?? type.toUpperCase();
 }

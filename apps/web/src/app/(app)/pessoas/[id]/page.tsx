@@ -7,7 +7,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { z } from "zod";
 import { DeleteDialog } from "@/components/DeleteDialog";
-import { documentTypeLabel } from "@/components/ListFilters";
+import { useDocumentTypeLabel } from "@/components/ListFilters";
 import { EmptyState } from "@/components/ListState";
 import { PageHead } from "@/components/PageHead";
 import page from "@/components/Page.module.css";
@@ -37,6 +37,7 @@ function formValues(person: PersonDetail): Record<EditableName, string> {
 
 export default function PersonPage() {
   const { t, format } = useLocale();
+  const typeLabel = useDocumentTypeLabel();
   const { can } = useSession();
   const personId = Number(useParams<{ id: string }>().id);
   const router = useRouter();
@@ -306,7 +307,7 @@ export default function PersonPage() {
                     <dd>
                       {item.value}{" "}
                       <Link className={styles.source} href={`/documentos/${item.document_id}`}>
-                        {documentTypeLabel(item.doc_type)} #{item.document_id}
+                        {typeLabel(item.doc_type)} #{item.document_id}
                       </Link>
                     </dd>
                   </div>
@@ -327,7 +328,7 @@ export default function PersonPage() {
                   <td className={page.primary}>
                     <Link href={`/documentos/${document.id}`} className={page.name} onClick={(event) => event.stopPropagation()}>
                       {document.thumbnail_url ? <img className={page.thumb} src={document.thumbnail_url} alt="" /> : <span className={page.thumb} />}
-                      <span>{documentTypeLabel(document.doc_type)}</span>
+                      <span>{typeLabel(document.doc_type)}</span>
                     </Link>
                   </td>
                   <td className={page.meta}>

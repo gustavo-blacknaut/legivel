@@ -3,7 +3,7 @@
 import { FilePlus2, Files, SearchX } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { LIST_KEYS, ListFilters, documentTypeLabel } from "@/components/ListFilters";
+import { LIST_KEYS, ListFilters, useDocumentTypeLabel } from "@/components/ListFilters";
 import { EmptyState, ListBar, LoadMore, SkeletonRows } from "@/components/ListState";
 import { PageHead } from "@/components/PageHead";
 import page from "@/components/Page.module.css";
@@ -16,6 +16,7 @@ import { useSession } from "@/lib/session";
 
 export default function DocumentsPage() {
   const { t, format } = useLocale();
+  const typeLabel = useDocumentTypeLabel();
   const { can } = useSession();
   const router = useRouter();
   const controls = useUrlFilters(LIST_KEYS, ["sort", "order"]);
@@ -67,7 +68,7 @@ export default function DocumentsPage() {
                     </Link>
                   </td>
                   <td className={page.meta}>
-                    <span className="tag">{documentTypeLabel(document.doc_type)}</span>
+                    <span className="tag">{typeLabel(document.doc_type)}</span>
                   </td>
                   <td className={`${page.meta} mono`}>{formatCpf(document.cpf) || "—"}</td>
                   <td className={`${page.meta} ${page.optional}`}>
