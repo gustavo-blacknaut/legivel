@@ -3,6 +3,8 @@
 !.env.example
 
 /data/
+/secrets/
+/backups/
 /storage/
 /uploads/
 *.db
@@ -28,6 +30,11 @@ htmlcov/
 Thumbs.db
 
 /docs/screenshots/qa/
-
-/docs/screenshots/qa/
-*.log
+/docs/screenshots/frames/
+/.runtime/
+/.venv-gpu/
+/.venv-cpu/
+/models/
+/.uv/
+/apps/api/models/
+/.venv/

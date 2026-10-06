@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 248 64" role="img" aria-label="Legível">
+  <rect width="64" height="64" rx="12" fill="#1d6b47"/>
+  <g fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M14 23v-6a3 3 0 0 1 3-3h6"/>
+    <path d="M41 14h6a3 3 0 0 1 3 3v6"/>
+    <path d="M50 41v6a3 3 0 0 1-3 3h-6"/>
+    <path d="M23 50h-6a3 3 0 0 1-3-3v-6"/>
+  </g>
+  <g fill="#ffffff">
+    <rect x="22" y="24" width="20" height="4" rx="2"/>
+    <rect x="22" y="31" width="14" height="4" rx="2"/>
+    <rect x="22" y="38" width="17" height="4" rx="2" opacity="0.55"/>
+  </g>
+  <text x="80" y="43" font-family="'IBM Plex Sans', 'Segoe UI', Helvetica, Arial, sans-serif" font-size="34" font-weight="600" letter-spacing="-0.5" fill="#e7ece9">Legível</text>
+</svg>

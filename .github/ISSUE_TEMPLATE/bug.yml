@@ -1,0 +1,33 @@
+name: Problema
+description: Algo não funciona como deveria
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: "Não anexe documentos reais nem dados pessoais. Use os fictícios de `tests/synthetic.py`."
+  - type: textarea
+    id: steps
+    attributes:
+      label: Passos para reproduzir
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: O que esperava e o que aconteceu
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Versão ou commit
+  - type: dropdown
+    id: install
+    attributes:
+      label: Instalação
+      options: [Docker, Windows nativo, Linux nativo]
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs relevantes
+      render: text

@@ -1,0 +1,12 @@
+title = "legivel"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Somente dados fictícios de teste"
+paths = [
+  '''^apps/api/tests/''',
+  '''^apps/web/e2e/''',
+  '''^apps/web/src/.*\.test\.tsx?$''',
+]

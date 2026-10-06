@@ -1,0 +1,4 @@
+[
+  { "name": "Ana Teste", "email": "admin@exemplo.com.br", "password": "senha-de-teste-e2e-1", "role": "admin" },
+  { "name": "Leo Leitor", "email": "leitor@exemplo.com.br", "password": "senha-de-teste-e2e-2", "role": "reader" }
+]

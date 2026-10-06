@@ -1,0 +1,17 @@
+.table { table-layout: auto; }
+.link { color: var(--color-accent); text-decoration: underline; text-underline-offset: 2px; }
+.alert .action { color: var(--color-danger); }
+.details { max-width: 320px; overflow: hidden; text-overflow: ellipsis; }
+
+@media (max-width: 720px) {
+  .table tr { display: grid !important; grid-template-columns: minmax(0, 1fr) auto; gap: 2px var(--space-3); }
+  .when { grid-column: 1 / -1; font-size: var(--text-sm); color: var(--color-text-2); }
+  .action { font-weight: 600; }
+  .user { grid-column: 2; grid-row: 2; text-align: right; font-size: var(--text-sm); color: var(--color-text-3); }
+  .entity { grid-column: 1 / -1; font-size: var(--text-sm); }
+  .table td.details, .table td.ip { display: block !important; grid-column: 1 / -1; font-size: var(--text-xs); color: var(--color-text-3); max-width: none; }
+  .table td.details:empty { display: none !important; }
+}
+@media (max-width: 1024px), (pointer: coarse) {
+  .link { display: inline-flex; align-items: center; min-height: var(--touch-target); min-width: var(--touch-target); }
+}

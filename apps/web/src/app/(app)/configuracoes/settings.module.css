@@ -1,0 +1,15 @@
+.inlineLink { padding: 0; border: 0; background: none; color: var(--color-accent); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; font-size: inherit; }
+.fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+.checks { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-5); }
+.hidden { display: none; }
+.warning { margin: var(--space-4) var(--space-4) 0; }
+.matrixWrap { overflow-x: auto; max-width: 100%; }
+.matrix { width: 100%; border-collapse: collapse; font-size: var(--text-sm); }
+.matrix th, .matrix td { padding: var(--space-2) var(--space-3); border-bottom: 1px solid var(--color-border); text-align: left; }
+.matrix thead th { font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-3); }
+.matrix td { text-align: center; width: 110px; }
+.matrix tbody th { font-weight: 500; color: var(--color-text); }
+@media (max-width: 1024px) {
+  .inlineLink { min-height: 32px; }
+}
+.status { padding-top: 0; }

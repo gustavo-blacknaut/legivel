@@ -1,23 +1,187 @@
+name: legivel
+
+x-api-env: &api-env
+  LEGIVEL_STORAGE_DIR: /data/storage
+  LEGIVEL_OCR_MODEL_DIR: /opt/legivel/models
+  LEGIVEL_OCR_DEVICE: cpu
+  XDG_CACHE_HOME: /tmp/cache
+  LEGIVEL_SECRET_KEY_FILE: /run/secrets/secret_key
+  LEGIVEL_ENCRYPTION_KEY_FILE: /run/secrets/encryption_key
+
+x-hardening: &hardening
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+  read_only: true
+
 services:
-  app:
-    build: .
-    env_file: .env
-    ports:
-      - "${LINCE_BIND:-127.0.0.1}:${LINCE_PORT:-8091}:8000"
+  postgres:
+    image: postgres:18.6-alpine3.24
+    <<: *hardening
+    cap_add: [CHOWN, DAC_OVERRIDE, FOWNER, SETGID, SETUID]
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-legivel}
+      POSTGRES_USER: ${POSTGRES_USER:-legivel}
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+    secrets: [postgres_password]
     volumes:
-      - ./data:/app/data
-      - ./storage:/app/storage
-      - ocr_models:/home/greenocr/.paddlex
+      - postgres-data:/var/lib/postgresql
+    tmpfs: [/tmp, /var/run/postgresql]
+    shm_size: 128m
+    mem_limit: ${POSTGRES_MEMORY_LIMIT:-1g}
+    pids_limit: 200
+    networks: [internal]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
     restart: unless-stopped
 
-  tests:
-    build: .
+  migrate:
+    image: legivel-api:local
+    build:
+      context: apps/api
+      target: runtime
+    <<: *hardening
+    env_file: .env
+    environment:
+      <<: *api-env
+      LEGIVEL_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-legivel}@postgres:5432/${POSTGRES_DB:-legivel}
+      LEGIVEL_DATABASE_PASSWORD_FILE: /run/secrets/postgres_password
+      LEGIVEL_OCR_WARMUP: "false"
+      LEGIVEL_BACKGROUND_JOBS: "false"
+    secrets: [postgres_password, database_app_password, secret_key, encryption_key]
+    volumes:
+      - ${LEGIVEL_STORAGE_PATH:-./storage}:/data/storage
+    tmpfs: [/tmp]
+    mem_limit: 512m
+    pids_limit: 100
+    networks: [internal]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command:
+      - python
+      - -m
+      - legivel.cli
+      - prepare-database
+      - --app-user
+      - ${POSTGRES_APP_USER:-legivel_app}
+      - --app-password-file
+      - /run/secrets/database_app_password
+    restart: "no"
+
+  api:
+    image: legivel-api:local
+    build:
+      context: apps/api
+      target: runtime
+    <<: *hardening
+    env_file: .env
+    environment:
+      <<: *api-env
+      LEGIVEL_DATABASE_URL: postgresql+psycopg://${POSTGRES_APP_USER:-legivel_app}@postgres:5432/${POSTGRES_DB:-legivel}
+      LEGIVEL_DATABASE_PASSWORD_FILE: /run/secrets/database_app_password
+    secrets: [database_app_password, secret_key, encryption_key]
+    volumes:
+      - ${LEGIVEL_STORAGE_PATH:-./storage}:/data/storage
+    tmpfs: [/tmp]
+    mem_limit: ${LEGIVEL_API_MEMORY_LIMIT:-3g}
+    pids_limit: 512
+    networks: [internal]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    command: ["uvicorn", "legivel.main:create_app", "--factory", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers", "--forwarded-allow-ips=*", "--no-access-log"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+    restart: unless-stopped
+
+  web:
+    build:
+      context: apps/web
+      args:
+        LEGIVEL_API_URL: http://api:8000
+    <<: *hardening
+    environment:
+      LEGIVEL_API_URL: http://api:8000
+    tmpfs: [/tmp]
+    volumes:
+      - type: tmpfs
+        target: /app/.next/cache
+        tmpfs:
+          mode: 01777
+    mem_limit: ${LEGIVEL_WEB_MEMORY_LIMIT:-512m}
+    pids_limit: 200
+    ports:
+      - "${LEGIVEL_BIND:-127.0.0.1}:${LEGIVEL_PORT:-8090}:3000"
+    networks: [internal]
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/entrar').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  mailpit:
+    image: axllent/mailpit:v1.31.4
+    profiles: ["dev"]
+    <<: *hardening
+    tmpfs: [/tmp]
+    mem_limit: 256m
+    ports:
+      - "127.0.0.1:${MAILPIT_PORT:-8025}:8025"
+      - "127.0.0.1:${MAILPIT_SMTP_PORT:-1025}:1025"
+    networks: [internal]
+    restart: unless-stopped
+
+  postgres-test:
+    image: postgres:18.6-alpine3.24
     profiles: ["tests"]
     environment:
-      LINCE_ENCRYPTION_KEY: ""
-    volumes:
-      - ocr_models:/home/greenocr/.paddlex
-    command: ["sh", "-c", "ruff check . && pytest"]
+      POSTGRES_DB: legivel_test
+      POSTGRES_USER: legivel
+      POSTGRES_PASSWORD: legivel-test
+    tmpfs: [/var/lib/postgresql]
+    networks: [internal]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U legivel -d legivel_test"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  tests:
+    build:
+      context: apps/api
+      target: test
+    profiles: ["tests"]
+    environment:
+      LEGIVEL_TEST_DATABASE_URL: postgresql://legivel:legivel-test@postgres-test:5432/legivel_test
+    networks: [internal]
+    depends_on:
+      postgres-test:
+        condition: service_healthy
+    command: ["sh", "-c", "ruff check . && pytest -p no:cacheprovider && LEGIVEL_TEST_DATABASE_URL= pytest -p no:cacheprovider"]
+
+networks:
+  internal: {}
+
+secrets:
+  postgres_password:
+    file: ./secrets/postgres_password
+  database_app_password:
+    file: ./secrets/database_app_password
+  secret_key:
+    file: ./secrets/secret_key
+  encryption_key:
+    file: ./secrets/encryption_key
 
 volumes:
-  ocr_models:
+  postgres-data: {}

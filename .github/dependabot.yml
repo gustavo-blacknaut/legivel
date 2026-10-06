@@ -1,0 +1,42 @@
+version: 2
+updates:
+  - package-ecosystem: uv
+    directory: /apps/api
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    ignore:
+      - dependency-name: opencv-python
+        versions: [">=5"]
+  - package-ecosystem: npm
+    directory: /apps/web
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      next:
+        patterns: ["next", "eslint-config-next", "react", "react-dom", "@types/react", "@types/react-dom"]
+      tests:
+        patterns: ["vitest", "jsdom", "@testing-library/*", "@playwright/test", "@vitejs/plugin-react"]
+    ignore:
+      - dependency-name: typescript
+        versions: [">=6"]
+      - dependency-name: eslint
+        versions: [">=10"]
+  - package-ecosystem: docker
+    directories: ["/apps/api", "/apps/web"]
+    schedule:
+      interval: weekly
+    ignore:
+      - dependency-name: python
+        versions: [">=3.13"]
+      - dependency-name: node
+        versions: ["25.x", "27.x", "29.x", "31.x"]
+  - package-ecosystem: docker-compose
+    directory: /
+    schedule:
+      interval: weekly
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
