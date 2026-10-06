@@ -24,6 +24,7 @@ dependencies = [
     "psycopg[binary]>=3.2",
     "pyotp>=2.9",
     "segno>=1.6",
+    "reportlab[dev,gpu-directml,tesseract]>=4.2",
 ]
 
 [project.optional-dependencies]
