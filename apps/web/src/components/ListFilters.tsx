@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowDownWideNarrow, ArrowUpNarrowWide, Search, SlidersHorizontal } from "lucide-react";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useEffectEvent, useState, type ReactNode } from "react";
 import { useT } from "@/lib/i18n";
 import styles from "./ListFilters.module.css";
 
@@ -35,6 +35,33 @@ export function DateRange<K extends string>({ controls, label, fromKey, toKey }:
   );
 }
 
+type SearchInputProps = { value: string; onSearch: (value: string) => void; placeholder: string; label?: string };
+
+export function SearchInput({ value, onSearch, placeholder, label }: SearchInputProps) {
+  const t = useT();
+  const [query, setQuery] = useState(value);
+  const [synced, setSynced] = useState(value);
+  if (synced !== value) {
+    setSynced(value);
+    setQuery(value);
+  }
+
+  const submit = useEffectEvent((next: string) => onSearch(next));
+  useEffect(() => {
+    if (query.trim() === value) return;
+    const timer = window.setTimeout(() => submit(query.trim()), SEARCH_DEBOUNCE_MS);
+    return () => window.clearTimeout(timer);
+  }, [query, value]);
+
+  return (
+    <label className={styles.searchField}>
+      <Search size={16} strokeWidth={1.75} />
+      <span className="visually-hidden">{label ?? t.filters.search}</span>
+      <input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={placeholder} maxLength={120} />
+    </label>
+  );
+}
+
 export function FilterBar({ children, compact }: { children: ReactNode; compact?: boolean }) {
   return (
     <div className={`${styles.filters} ${compact ? styles.compact : ""}`} role="search">
@@ -48,21 +75,8 @@ type ListFiltersProps = { controls: Controls<ListKey>; dateLabel: string };
 export function ListFilters({ controls, dateLabel }: ListFiltersProps) {
   const t = useT();
   const { values, update } = controls;
-  const [query, setQuery] = useState(values.q);
   const [expanded, setExpanded] = useState(false);
   const order = values.order || "desc";
-
-  const [syncedQuery, setSyncedQuery] = useState(values.q);
-  if (syncedQuery !== values.q) {
-    setSyncedQuery(values.q);
-    setQuery(values.q);
-  }
-
-  useEffect(() => {
-    if (query === values.q) return;
-    const timer = window.setTimeout(() => update("q", query.trim()), SEARCH_DEBOUNCE_MS);
-    return () => window.clearTimeout(timer);
-  }, [query, values.q, update]);
 
   const activeCount = (["doc_type", "status", "from", "to"] as const).filter((key) => values[key]).length;
   const sorts = [
@@ -74,11 +88,7 @@ export function ListFilters({ controls, dateLabel }: ListFiltersProps) {
   return (
     <div className={`${styles.filters} ${styles.collapsible} ${expanded ? styles.expanded : ""}`} role="search">
       <div className={styles.search}>
-        <label className={styles.searchField}>
-          <Search size={16} strokeWidth={1.75} />
-          <span className="visually-hidden">{t.filters.search}</span>
-          <input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t.filters.namePlaceholder} maxLength={120} />
-        </label>
+        <SearchInput value={values.q} onSearch={(value) => update("q", value)} placeholder={t.filters.namePlaceholder} />
         <button className={`button button-secondary ${styles.toggle}`} type="button" aria-expanded={expanded} onClick={() => setExpanded((current) => !current)}>
           <SlidersHorizontal size={16} strokeWidth={1.75} />
           {t.filters.toggle}
