@@ -21,6 +21,7 @@ from legivel.services.retention import start_retention_worker
 from legivel.services.settings import load_runtime
 from legivel.storage.file_store import FileStore
 from legivel.web.limits import BodySizeLimit
+from legivel.web.modules_routes import router as records_router
 from legivel.web.routes import public_router, router
 
 CSRF_HEADER = "x-requested-with"
@@ -74,6 +75,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     application.include_router(auth_router)
     application.include_router(users_router)
     application.include_router(router)
+    application.include_router(records_router)
     application.include_router(public_router)
 
     @application.get("/health", include_in_schema=False)

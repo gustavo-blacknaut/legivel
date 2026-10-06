@@ -423,6 +423,8 @@ def read_settings(request: Request, user: UserDep, runtime: RuntimeDep) -> Setti
 
 @router.put("/settings")
 def save_settings(request: Request, payload: SettingsIn, user: Administrator, session: SessionDep) -> SettingsOut:
+    if payload.values.get("store_card_numbers") in (True, "true") and not request.app.state.settings.encryption_enabled:
+        raise HTTPException(400, "Guardar o número do cartão exige a criptografia ativada.")
     try:
         changed = update_runtime(session, payload.values)
     except SettingError as error:
