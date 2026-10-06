@@ -3,6 +3,7 @@
 import { Camera, Check, ImagePlus, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, type DragEvent } from "react";
 import { useT } from "@/lib/i18n";
+import { CaptureAssessment, GuidedCamera } from "./GuidedCamera";
 import { useInstance } from "./Providers";
 import styles from "./PhotoInput.module.css";
 
@@ -104,7 +105,7 @@ export function PhotoInput({ label, file, onChange }: PhotoInputProps) {
       <div className={`${styles.zone} ${styles.filled}`}>
         {inputs}
         <span className={styles.badge}>{label}</span>
-        <img className={styles.preview} src={preview} alt={label} />
+        {file && <CaptureAssessment key={preview} file={file} preview={preview} label={label} />}
         <div className={styles.bar}>
           <button className="button button-secondary" type="button" onClick={() => cameraRef.current?.click()}>
             <Camera size={16} strokeWidth={1.75} />
@@ -133,6 +134,7 @@ export function PhotoInput({ label, file, onChange }: PhotoInputProps) {
       <ImagePlus size={28} strokeWidth={1.5} aria-hidden="true" />
       <span className={styles.title}>{label}</span>
       <div className={styles.buttons}>
+        <GuidedCamera onCapture={pick} fallback={() => cameraRef.current?.click()} />
         <button className="button" type="button" onClick={() => cameraRef.current?.click()} aria-label={`${label}: ${t.upload.takePhoto}`}>
           <Camera size={16} strokeWidth={1.75} />
           {t.upload.takePhoto}

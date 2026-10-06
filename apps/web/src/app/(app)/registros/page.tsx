@@ -1,4 +1,5 @@
 "use client";
+import { SavedSearches } from "@/components/Organization";
 
 import { Library, ScanText, SearchX } from "lucide-react";
 import Link from "next/link";
@@ -35,7 +36,8 @@ export default function RecordsPage() {
     <div className={page.page}>
       <PageHead title={t.records.title} description={t.records.description} actions={newReading} />
       <section className={`panel ${page.listPanel}`}>
-        <FilterBar>
+        <SavedSearches />
+      <FilterBar>
           <SearchInput value={values.q} onSearch={(value) => update("q", value)} placeholder={t.search.placeholder} />
           <label>
             <span className="visually-hidden">{t.records.module}</span>

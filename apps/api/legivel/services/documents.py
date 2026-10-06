@@ -1,4 +1,5 @@
 import hashlib
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import date
 
@@ -239,6 +240,24 @@ def read_again(
             return
 
 
+def field_regions(result: ExtractionResult, readings: list[SideReading]) -> dict:
+    regions = {}
+    for name, field in result.fields.items():
+        if field.box is None:
+            continue
+        index, box = side_of(field.box)
+        side = ImageSide.FRONT if index == 0 else ImageSide.BACK
+        reading = next((item for item in readings if item.side == side), None)
+        if reading is None:
+            continue
+        height, width = reading.image.shape[:2]
+        regions[name] = {"side": reading.side, "rect": [
+            max(0, box.x0 / width), max(0, box.y0 / height),
+            min(1, box.x1 / width), min(1, box.y1 / height),
+        ]}
+    return regions
+
+
 def apply_extraction(
     document: Document, engine: OcrEngine, readings: list[SideReading], detected: bool = False, passes: int = 1
 ) -> None:
@@ -258,6 +277,7 @@ def apply_extraction(
     document.extra_fields = {
         **document.extra_fields,
         "extracted": result.values(),
+        "field_regions": field_regions(result, ordered),
         "issues": result.issues,
         "notes": [note for note in (cpf_status, "type_detected" if detected else None) if note],
     }
@@ -287,7 +307,7 @@ def store_page(
             processed_path=store.save("processed", encode_processed(reading.image, policy.quality)).relative_path,
             thumbnail_path=store.save("thumbnails", encode_thumbnail(reading.image)).relative_path,
             original_mime=mime,
-            sha256=original.sha256,
+            sha256=hashlib.sha256(uploaded.content).hexdigest(),
             width=image.width,
             height=image.height,
         )
@@ -310,10 +330,16 @@ def process_document(
     sides: list[UploadedSide],
     user_id: int | None = None,
     policy: ImagePolicy = DEFAULT_POLICY,
+    commit: bool = True,
+    progress: Callable[[], None] | None = None,
 ) -> Document:
     if doc_type:
         get_parser(doc_type)
-    readings = [read_upload(engine, uploaded) for uploaded in sides]
+    readings = []
+    for uploaded in sides:
+        readings.append(read_upload(engine, uploaded))
+        if progress:
+            progress()
     resolved_type, detected = resolve_type(doc_type, readings)
     document = Document(doc_type=resolved_type, ocr_engine=engine.name, created_by=user_id, field_confidence={}, extra_fields={})
     for uploaded, reading in zip(sides, readings, strict=True):
@@ -324,7 +350,8 @@ def process_document(
     session.add(document)
     session.flush()
     session.add(AuditLog(user_id=user_id, action="create", entity="document", entity_id=document.id))
-    session.commit()
+    if commit:
+        session.commit()
     return document
 
 

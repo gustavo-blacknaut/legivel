@@ -1,4 +1,5 @@
 "use client";
+import { SavedSearches } from "@/components/Organization";
 
 import { FilePlus2, SearchX, Trash2, Users } from "lucide-react";
 import Link from "next/link";
@@ -47,7 +48,8 @@ export default function PeoplePage() {
     <div className={page.page}>
       <PageHead title={t.people.title} description={t.people.description} actions={newDocument} />
       <section className={`panel ${page.listPanel}`}>
-        <ListFilters controls={controls} dateLabel={t.people.dateLabel} />
+        <SavedSearches />
+      <ListFilters controls={controls} dateLabel={t.people.dateLabel} />
         <ListBar total={list.total} one={t.people.one} many={t.people.many} filtered={controls.active} onClear={controls.clear} />
         {list.total === null && !list.error ? (
           <SkeletonRows />

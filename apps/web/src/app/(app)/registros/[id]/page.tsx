@@ -5,6 +5,8 @@ import { CircleAlert, Download, FileText, Save, ShieldCheck, Trash2 } from "luci
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useMemo, useState, type FormEvent } from "react";
+import { OrganizationEditor } from "@/components/Organization";
+import { RedactionExport } from "@/components/RedactionExport";
 import { DeleteDialog } from "@/components/DeleteDialog";
 import { Lightbox } from "@/components/Lightbox";
 import { EmptyState } from "@/components/ListState";
@@ -243,6 +245,8 @@ export default function RecordPage() {
         </div>
       </div>
 
+      <OrganizationEditor entity="record" id={record.id} />
+      <RedactionExport key={record.id} entity="record" id={record.id} pages={record.pages} />
       <DeleteDialog
         open={deleting}
         title={t.record.deleteTitle}

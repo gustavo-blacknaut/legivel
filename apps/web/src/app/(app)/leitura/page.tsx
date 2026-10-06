@@ -10,6 +10,7 @@ import { PageHead } from "@/components/PageHead";
 import page from "@/components/Page.module.css";
 import { PhotoInput, UploadChecklist, photoStyles } from "@/components/PhotoInput";
 import styles from "@/components/Upload.module.css";
+import { enqueue } from "@/lib/workflow";
 import { api } from "@/lib/api/endpoints";
 import { useT } from "@/lib/i18n";
 import { useSession } from "@/lib/session";
@@ -64,8 +65,13 @@ export default function ReadingPage() {
     setBusy(true);
     setError(null);
     try {
-      const record = await api.uploadRecord(form);
-      router.push(`/registros/${record.id}`);
+      if (selected.key === "cards" || system.data?.encrypted_storage === false) {
+        const record = await api.uploadRecord(form);
+        router.push(`/registros/${record.id}`);
+      } else {
+        await enqueue(form);
+        router.push("/fila");
+      }
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : t.common.error);
       setBusy(false);

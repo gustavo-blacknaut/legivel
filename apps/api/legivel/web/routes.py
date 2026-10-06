@@ -140,9 +140,7 @@ def detail(document: Document, reveal: bool = False) -> DocumentDetail:
     return document_detail(document, get_parser(document.doc_type), reveal)
 
 
-def allow_reveal(
-    session: Session, user: User, runtime: RuntimeSettings, wanted: bool, entity: str, entity_id: int
-) -> bool:
+def allow_reveal(session: Session, user: User, runtime: RuntimeSettings, wanted: bool, entity: str, entity_id: int) -> bool:
     if not wanted:
         return False
     if Permission.DATA_REVEAL not in runtime.permissions_of(user.role):
@@ -571,6 +569,18 @@ def active_link(request: Request, session: Session, token: str) -> ScanLink:
 def public_link(request: Request, token: str, session: SessionDep) -> PublicLinkOut:
     link = active_link(request, session, token)
     return PublicLinkOut(label=link.label, state=link_state(link), expires_at=link.expires_at)
+
+
+@public_router.post("/scan/{token}/check")
+async def check_scan_photo(
+    request: Request, token: str, session: SessionDep, runtime: RuntimeDep, photo: Annotated[UploadFile, File()]
+) -> dict:
+    from legivel.imaging.quality import assess_photo
+
+    link = active_link(request, session, token)
+    if link_state(link) != LinkState.ACTIVE:
+        raise HTTPException(410, "Link indisponível")
+    return await run_in_threadpool(assess_photo, await read_image(runtime, photo))
 
 
 @public_router.post("/scan/{token}", status_code=201)

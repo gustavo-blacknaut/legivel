@@ -11,6 +11,8 @@ function privateRoutes(): string[] {
     "/documentos",
     `/documentos/${state.document_id}`,
     "/novo",
+    "/fila",
+    "/organizar",
     "/registros",
     `/registros/${state.record_id}`,
     `/registros/${state.card_record_id}`,

@@ -22,6 +22,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import { api } from "@/lib/api/endpoints";
 import { initials } from "@/lib/format";
+import { useWorkflowText } from "@/lib/workflow-text";
 import { useT } from "@/lib/i18n";
 import { useSession } from "@/lib/session";
 import { useStoredValue } from "@/lib/storage";
@@ -78,6 +79,7 @@ function VerificationBanner() {
 
 export function AppShell({ children }: { children: ReactNode }) {
   const t = useT();
+  const w = useWorkflowText();
   const { user, can, logout } = useSession();
   const instance = useInstance();
   const pathname = usePathname();
@@ -96,6 +98,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   const toggleCollapsed = () => setCollapsedFlag(collapsed ? "0" : "1");
 
   const primary: NavEntry[] = [
+    { href: "/fila", label: w.queue, icon: ScanText, permission: "documents.upload" },
+    { href: "/organizar", label: w.organize, icon: Library },
     { href: "/pessoas", label: t.nav.people, icon: Users },
     { href: "/documentos", label: t.nav.documents, icon: Files },
     { href: "/novo", label: t.nav.newDocument, icon: FilePlus2, permission: "documents.upload" },

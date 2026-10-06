@@ -1,0 +1,22 @@
+.workflow-stack { display: grid; gap: 1rem; min-width: 0; }
+.workflow-row { display: flex; align-items: center; gap: .75rem; flex-wrap: wrap; }
+.workflow-image { position: relative; width: 100%; overflow: hidden; background: var(--color-surface-2); touch-action: manipulation; }
+.workflow-image > img, .workflow-image > video { display: block; width: 100%; height: auto; }
+.workflow-image > svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.workflow-camera { position: relative; }
+.workflow-camera video { width: 100%; display: block; }
+.workflow-guide { position: absolute; inset: 15% 8%; border: 3px solid #fff; border-radius: .5rem; box-shadow: 0 0 0 100vmax #0005; pointer-events: none; }
+.workflow-camera { overflow: hidden; }
+.workflow-crop { display: block; width: 100%; max-height: 180px; object-fit: contain; }
+.workflow-progress { width: 100%; }
+.workflow-item { display: grid; gap: .5rem; padding: 1rem; border-bottom: 1px solid var(--color-border); overflow-wrap: anywhere; }
+.workflow-link { min-height: 44px; min-width: 44px; display: inline-flex; align-items: center; }
+.workflow-form { display: grid; gap: .75rem; }
+.workflow-form input, .workflow-form select { width: 100%; min-width: 0; }
+
+.workflow-row > * { min-width: 0; max-width: 100%; }
+.workflow-row .field { flex: 1 1 160px; }
+.workflow-stack p { overflow-wrap: anywhere; }
+
+.workflow-assessment { width: 100%; }
+.workflow-assessment > p, .workflow-assessment > small { margin: 0 .75rem; }

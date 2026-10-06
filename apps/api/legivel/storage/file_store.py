@@ -5,7 +5,7 @@ from pathlib import Path
 
 from legivel.security.crypto import DecryptionError, KeyRing, is_encrypted
 
-ALLOWED_CATEGORIES = ("originals", "processed", "thumbnails", "branding")
+ALLOWED_CATEGORIES = ("originals", "processed", "thumbnails", "branding", "queue")
 
 
 @dataclass(frozen=True)

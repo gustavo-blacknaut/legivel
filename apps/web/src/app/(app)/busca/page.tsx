@@ -1,4 +1,5 @@
 "use client";
+import { SavedSearches } from "@/components/Organization";
 
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { IdCard, Search, SearchX } from "lucide-react";
@@ -34,7 +35,8 @@ export default function SearchPage() {
     <div className={page.page}>
       <PageHead title={t.search.title} description={t.search.description} />
       <section className={`panel ${page.listPanel}`}>
-        <FilterBar>
+        <SavedSearches />
+      <FilterBar>
           <SearchInput value={values.q} onSearch={(value) => update("q", value)} placeholder={t.search.placeholder} label={t.search.title} />
           <label>
             <span className="visually-hidden">{t.records.module}</span>

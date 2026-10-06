@@ -68,9 +68,12 @@ class ProcessingContext:
     enabled_languages: list[str]
     language: str = AUTO
     options: dict = field(default_factory=dict)
+    progress: Callable[[], None] | None = None
 
     def read(self, image: np.ndarray) -> PageReading:
         reading = read_any_language(self.engine_for_pack, image, self.language, self.enabled_languages)
+        if self.progress:
+            self.progress()
         return PageReading(reading.image, reading.boxes, reading.language)
 
 

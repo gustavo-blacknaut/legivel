@@ -5,7 +5,7 @@ from sqlalchemy import Text, and_, exists, not_, or_, select, type_coerce
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.orm.attributes import flag_modified
 
-from legivel.db.models import CardDetail, Document, DocumentImage, Person, Record, RecordPage
+from legivel.db.models import CardDetail, Document, DocumentImage, Person, ProcessingJob, Record, RecordPage
 from legivel.security.crypto import FIELD_PREFIX, FILE_HEADER, KeyRing
 from legivel.security.fields import blind_index
 from legivel.services.settings import LOGO_PATH_KEY, stored_values
@@ -22,6 +22,7 @@ PROTECTED = (
     (Record, RECORD_FIELDS),
     (RecordPage, RECORD_PAGE_FIELDS),
     (CardDetail, CARD_FIELDS),
+    (ProcessingJob, ("payload",)),
 )
 BATCH_SIZE = 200
 
@@ -79,6 +80,7 @@ def reencrypt(factory: sessionmaker[Session], store: FileStore, ring: KeyRing | 
         report.records = rewrite_rows(session, Record, RECORD_FIELDS)
         rewrite_rows(session, RecordPage, RECORD_PAGE_FIELDS)
         rewrite_rows(session, CardDetail, CARD_FIELDS)
+        rewrite_rows(session, ProcessingJob, ("payload",))
         if ring is None:
             return report
         paths = [
@@ -88,6 +90,7 @@ def reencrypt(factory: sessionmaker[Session], store: FileStore, ring: KeyRing | 
             for path in (image.original_path, image.processed_path, image.thumbnail_path)
             if path
         ]
+        paths.extend(path for job in session.scalars(select(ProcessingJob)) for path in job.payload.get("paths", []))
         logo = stored_values(session).get(LOGO_PATH_KEY)
         if logo:
             paths.append(logo)

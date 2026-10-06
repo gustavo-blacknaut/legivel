@@ -74,6 +74,7 @@ def create_record(
     uploads: list[bytes],
     user_id: int | None,
     card_policy: CardPolicy,
+    commit: bool = True,
 ) -> Record:
     output = module.process(context, uploads)
     record = Record(module=module.key, created_by=user_id, data={}, field_confidence={}, issues=[])
@@ -83,7 +84,8 @@ def create_record(
     session.add(record)
     session.flush()
     audit(session, user_id, "create", f"record:{module.key}", record.id)
-    session.commit()
+    if commit:
+        session.commit()
     return record
 
 

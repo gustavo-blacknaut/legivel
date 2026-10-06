@@ -13,6 +13,12 @@ OCR local para documentos e papéis do dia a dia. Lê RG, CNH, CPF, passaporte, 
 
 Todas as telas em 360, 375, 768, 1024, 1280 e 1920 px estão em [docs/screenshots](docs/screenshots). Os documentos que aparecem são fictícios, gerados por `apps/api/tests/synthetic.py`.
 
+## Novidades da versão 0.2.0
+
+Câmera guiada com conferência da foto, revisão com recortes e atalhos, fila persistente, aviso de duplicados, pastas e etiquetas pessoais, buscas salvas e exportação com ocultação manual de dados. O assistente `python scripts/instalar.py` prepara a instalação com Docker e confere os serviços.
+
+Veja o funcionamento, os requisitos e a atualização em [Novidades da versão 0.2.0](docs/novidades-0.2.md).
+
 ## O que faz
 
 Documentos de identificação

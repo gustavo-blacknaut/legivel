@@ -1,5 +1,6 @@
 import logging
 import threading
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
@@ -17,12 +18,14 @@ from legivel.mail.sender import Mailer
 from legivel.ocr.factory import get_ocr_engine
 from legivel.security.fields import configure_fields
 from legivel.services.audit import current_ip
+from legivel.services.jobs import start_worker
 from legivel.services.retention import start_retention_worker
 from legivel.services.settings import load_runtime
 from legivel.storage.file_store import FileStore
 from legivel.web.limits import BodySizeLimit
 from legivel.web.modules_routes import router as records_router
 from legivel.web.routes import public_router, router
+from legivel.web.workflow_routes import router as workflow_router
 
 CSRF_HEADER = "x-requested-with"
 CSRF_HEADER_VALUE = "legivel"
@@ -58,7 +61,7 @@ def warm_up_ocr(application: FastAPI) -> None:
         logging.getLogger("legivel.ocr").exception("Falha ao preparar o motor de OCR")
 
 
-ROUTERS = (setup_router, auth_router, users_router, router, records_router, public_router)
+ROUTERS = (setup_router, auth_router, users_router, router, records_router, public_router, workflow_router)
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -67,7 +70,20 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     ring = settings.key_ring()
     configure_fields(ring, settings.secret_key)
     configure_hashing(settings.argon2_time_cost, settings.argon2_memory_kib, settings.argon2_parallelism)
-    application = FastAPI(title="Legível", version=__version__, docs_url=None, redoc_url=None, openapi_url=None)
+
+    @asynccontextmanager
+    async def lifespan(app):
+        worker = start_worker(app) if settings.background_jobs else None
+        try:
+            yield
+        finally:
+            if worker:
+                worker[0].set()
+                worker[1].join(timeout=30)
+
+    application = FastAPI(
+        title="Legível", version=__version__, docs_url=None, redoc_url=None, openapi_url=None, lifespan=lifespan
+    )
     application.state.settings = settings
     application.state.session_factory = build_session_factory(build_engine(settings.database_url))
     application.state.store = FileStore(settings.storage_dir, ring)

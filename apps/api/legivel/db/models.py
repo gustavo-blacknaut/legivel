@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from enum import StrEnum
 
-from sqlalchemy import JSON, Boolean, Date, DateTime, Float, ForeignKey, Integer, String, Text
+from sqlalchemy import JSON, Boolean, Date, DateTime, Float, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship, validates
 
 from legivel.db.base import Base, utc_now
@@ -277,3 +277,41 @@ class CardDetail(Base):
     full_number: Mapped[str | None] = mapped_column(EncryptedText)
 
     record: Mapped[Record] = relationship(back_populates="card")
+
+
+class ProcessingJob(Base):
+    __tablename__ = "processing_jobs"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    module: Mapped[str] = mapped_column(String(32))
+    label: Mapped[str] = mapped_column(String(200))
+    status: Mapped[str] = mapped_column(String(24), default="queued", index=True)
+    payload: Mapped[dict] = mapped_column(EncryptedJSON, default=dict)
+    completed_pages: Mapped[int] = mapped_column(Integer, default=0)
+    total_pages: Mapped[int] = mapped_column(Integer)
+    result_id: Mapped[int | None] = mapped_column(Integer)
+    error: Mapped[str | None] = mapped_column(String(255))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
+
+
+class OrganizationEntry(Base):
+    __tablename__ = "organization_entries"
+    __table_args__ = (UniqueConstraint("user_id", "entity", "entity_id", name="uq_organization_owner_entity"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    entity: Mapped[str] = mapped_column(String(16))
+    entity_id: Mapped[int] = mapped_column(Integer)
+    folder: Mapped[str] = mapped_column(String(100), default="")
+    tags: Mapped[list] = mapped_column(JSON, default=list)
+
+
+class SavedSearch(Base):
+    __tablename__ = "saved_searches"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    name: Mapped[str] = mapped_column(String(100))
+    path: Mapped[str] = mapped_column(String(2000))

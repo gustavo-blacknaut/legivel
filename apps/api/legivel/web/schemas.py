@@ -61,6 +61,8 @@ class DocumentDetail(DocumentSummary):
     image_count: int
     person_id: int | None
     masked: bool
+    field_regions: dict = {}
+    similar_documents: list[int] = []
 
 
 class ReviewIn(BaseModel):
@@ -189,6 +191,9 @@ def document_detail(document: Document, parser: DocumentParser, reveal: bool = F
         masked=not reveal,
         image_count=len(document.images),
         person_id=document.person_id,
+        field_regions=extra.get("field_regions", {}),
+        similar_documents=[item.id for item in (document.person.documents if document.person else [])
+                           if item.id != document.id and item.doc_type == document.doc_type],
     )
 
 

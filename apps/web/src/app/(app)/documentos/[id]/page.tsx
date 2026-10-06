@@ -5,6 +5,10 @@ import { ArrowUpDown, ChevronDown, CircleAlert, Eye, FileSearch, IdCard, Refresh
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useMemo, useState, type FormEvent } from "react";
+import { FieldCrop, type FieldRegion } from "@/components/FieldCrop";
+import { OrganizationEditor } from "@/components/Organization";
+import { RedactionExport } from "@/components/RedactionExport";
+import { useWorkflowText } from "@/lib/workflow-text";
 import { DeleteDialog } from "@/components/DeleteDialog";
 import { Lightbox } from "@/components/Lightbox";
 import { EmptyState } from "@/components/ListState";
@@ -26,6 +30,8 @@ function valuesOf(document: DocumentDetail): Record<string, string> {
 
 export default function DocumentPage() {
   const { t, format } = useLocale();
+  const w = useWorkflowText();
+  const [activeField, setActiveField] = useState<string | null>(null);
   const { can } = useSession();
   const documentId = Number(useParams<{ id: string }>().id);
   const router = useRouter();
@@ -122,6 +128,15 @@ export default function DocumentPage() {
     { key: "document", title: t.review.documentData, icon: IdCard },
   ];
   const holder = document.full_name || t.documents.unidentified;
+  const fieldRegions = document.field_regions as Record<string, FieldRegion>;
+  const selectedRegion = activeField ? fieldRegions?.[activeField] : undefined;
+  const selectedSource = document.pages.find((image) => image.side === selectedRegion?.side)?.full_url;
+  const nextIssue = () => {
+    const candidates = document.fields.filter((field) => !values[field.name] || field.issues.length || (field.confidence ?? 0) < .9);
+    const index = candidates.findIndex((field) => field.name === activeField);
+    const next = candidates[(index + 1) % candidates.length];
+    if (next) { setActiveField(next.name); window.document.getElementById(`field-${next.name}`)?.focus(); }
+  };
 
   return (
     <div className={page.page}>
@@ -163,6 +178,7 @@ export default function DocumentPage() {
 
       <div className={styles.review}>
         <aside className={styles.images} aria-label={t.review.images}>
+          {activeField && <FieldCrop key={activeField} field={document.fields.find((field) => field.name === activeField)?.label ?? activeField} region={selectedRegion} src={selectedSource} />}
           {document.pages.map((image) => {
             const side = t.review.sides[image.side] ?? image.side;
             return (
@@ -191,7 +207,15 @@ export default function DocumentPage() {
         </aside>
 
         <div className="stack">
-          <form className="panel" onSubmit={save}>
+          {document.similar_documents.length > 0 && <div className="alert alert-warning">{w.similar} {document.similar_documents.map((id) => <Link className="workflow-link" key={id} href={`/documentos/${id}`}> #{id} </Link>)}</div>}
+          <div className="workflow-row"><button type="button" className="button button-secondary" onClick={nextIssue}>{w.nextIssue}</button><small>{w.shortcut}</small></div>
+          <form className="panel" onSubmit={save} onFocus={(event) => {
+            const name = (event.target as HTMLElement).id.replace("field-", "");
+            if (document.fields.some((field) => field.name === name)) setActiveField(name);
+          }} onKeyDown={(event) => {
+            if (event.altKey && event.key.toLowerCase() === "n") { event.preventDefault(); nextIssue(); }
+            if ((event.ctrlKey || event.metaKey) && event.key === "Enter" && editable && !saving) { event.preventDefault(); event.currentTarget.requestSubmit(); }
+          }}>
             <div className="panel-head">
               <h2>{t.review.formTitle}</h2>
               <span className="muted">
@@ -251,6 +275,8 @@ export default function DocumentPage() {
             )}
           </form>
 
+          <OrganizationEditor entity="document" id={document.id} />
+          <RedactionExport key={document.id} entity="document" id={document.id} pages={document.pages} />
           <section className="panel">
             <div className="panel-head">
               <h2>{t.review.processing}</h2>

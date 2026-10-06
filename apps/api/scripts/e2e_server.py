@@ -32,7 +32,7 @@ def prepare(directory: Path, accounts: list[dict]) -> dict:
             "LEGIVEL_SECRET_KEY": generate_key(),
             "LEGIVEL_OCR_DEVICE": os.environ.get("LEGIVEL_OCR_DEVICE", "cpu"),
             "LEGIVEL_OCR_WARMUP": "false",
-            "LEGIVEL_BACKGROUND_JOBS": "false",
+            "LEGIVEL_BACKGROUND_JOBS": "true",
         }
     )
     settings = load_settings(_env_file=None)

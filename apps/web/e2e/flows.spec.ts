@@ -35,7 +35,9 @@ test.describe("administrador", () => {
     const [chooser] = await Promise.all([page.waitForEvent("filechooser"), page.getByRole("button", { name: "Verso: Escolher arquivo" }).click()]);
     await chooser.setFiles({ name: "verso.jpg", mimeType: "image/jpeg", buffer: readFileSync(SAMPLE) });
     await page.getByRole("button", { name: "Extrair dados" }).click();
-    await expect(page).toHaveURL(/\/documentos\/\d+/, { timeout: 60_000 });
+    await expect(page).toHaveURL(/\/fila$/, { timeout: 60_000 });
+    await page.getByRole("article").filter({ hasText: "verso.jpg" }).first().getByRole("link", { name: "Abrir", exact: true }).click();
+    await expect(page).toHaveURL(/\/documentos\/\d+/);
     await expect(page.getByRole("heading", { name: "Revisão dos dados" })).toBeVisible();
     await expect(page.getByText("Confiança média")).toBeVisible();
     const name = page.getByLabel(/Nome/).first();
@@ -51,7 +53,9 @@ test.describe("administrador", () => {
     const [chooser] = await Promise.all([page.waitForEvent("filechooser"), page.getByRole("button", { name: /Escolher arquivo/ }).first().click()]);
     await chooser.setFiles({ name: "pagina.jpg", mimeType: "image/jpeg", buffer: readFileSync(PAGE_SAMPLE) });
     await page.getByRole("button", { name: "Ler", exact: true }).click();
-    await expect(page).toHaveURL(/\/registros\/\d+/, { timeout: 60_000 });
+    await expect(page).toHaveURL(/\/fila$/, { timeout: 60_000 });
+    await page.getByRole("article").filter({ hasText: "pagina.jpg" }).first().getByRole("link", { name: "Abrir", exact: true }).click();
+    await expect(page).toHaveURL(/\/registros\/\d+/);
     await expect(page.getByRole("heading", { name: "Dados lidos" })).toBeVisible();
     await expect(page.getByText(/cooperativa/i).first()).toBeVisible();
     const title = page.getByLabel(/Título/).first();
