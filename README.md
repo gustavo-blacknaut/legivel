@@ -2,27 +2,39 @@
 
 [![Licença MIT](https://img.shields.io/badge/licen%C3%A7a-MIT-1d6b47)](LICENSE)
 
-Lê RG, CNH e cartão CPF a partir de fotos, extrai os campos, valida o CPF e monta um cadastro de pessoas para revisão. Roda inteiro num servidor próprio: o OCR é local, as imagens ficam criptografadas em disco e nada é enviado para serviços externos.
-
-Existe porque digitar dados de documentos à mão é lento e sujeito a erro, e os serviços prontos de OCR exigem mandar imagens de documentos de terceiros para fora, o que complica a LGPD.
+OCR local para documentos e papéis do dia a dia. Lê RG, CNH, CPF, passaporte, título de eleitor e certidões e monta um cadastro de pessoas; lê também páginas de livro, boletos, notas fiscais, cartões e qualquer folha fotografada, com o texto pesquisável. Tudo roda num servidor próprio: nenhuma imagem sai da máquina, e os dados ficam cifrados em disco.
 
 <img src="docs/screenshots/fluxo.gif" alt="Envio de um RG fictício, revisão dos campos e cadastro da pessoa" width="760">
 
 | Desktop | Celular |
 | --- | --- |
-| <img src="docs/screenshots/1280/revisao.png" alt="Revisão de um documento com confiança por campo" width="520"> | <img src="docs/screenshots/375/pessoas.png" alt="Lista de pessoas no celular" width="220"> |
-| <img src="docs/screenshots/1280/pessoas-escuro.png" alt="Lista de pessoas no tema escuro" width="520"> | <img src="docs/screenshots/375/apagar.png" alt="Confirmação de exclusão em bottom sheet" width="220"> |
+| <img src="docs/screenshots/1280/registro.png" alt="Página de livro lida em duas colunas, com texto e exportação" width="520"> | <img src="docs/screenshots/375/leitura.png" alt="Escolha do módulo de leitura no celular" width="220"> |
+| <img src="docs/screenshots/1280/revisao.png" alt="Revisão de um documento com confiança por campo" width="520"> | <img src="docs/screenshots/375/cartao.png" alt="Cartão lido com número mascarado" width="220"> |
 
 Todas as telas em 360, 375, 768, 1024, 1280 e 1920 px estão em [docs/screenshots](docs/screenshots). Os documentos que aparecem são fictícios, gerados por `apps/api/tests/synthetic.py`.
 
 ## O que faz
 
-- Identifica o tipo do documento, corrige perspectiva e orientação, separa frente e verso e recorta foto, assinatura e polegar.
-- Mostra a confiança do OCR em cada campo; o CPF passa pelo dígito verificador e é relido quando não fecha.
-- Consolida pessoas por CPF. Lista com busca, filtros na URL, paginação e exclusão com confirmação digitada.
+Documentos de identificação
+
+- Identifica o tipo (RG, CNH, CPF, passaporte, título de eleitor, certidão), corrige perspectiva e orientação, separa frente e verso e recorta foto, assinatura e polegar.
+- Mostra a confiança do OCR em cada campo; o CPF passa pelo dígito verificador e é relido quando não fecha. A zona MRZ do passaporte é conferida pelos dígitos de controle.
+- Consolida pessoas por CPF, com busca, filtros na URL, paginação e exclusão com confirmação digitada.
 - Envio remoto: um link de uso único para a própria pessoa fotografar o documento pelo celular.
+
+Módulos de leitura
+
+- Livros e textos: até 300 páginas por envio, colunas lidas na ordem certa, exportação em PDF pesquisável, TXT e Markdown.
+- Digitalização: endireita e limpa a folha, guarda original e versão tratada.
+- Finanças: linha digitável de boleto conferida pelos dígitos verificadores, valores, vencimento e CNPJ.
+- Cartões: bandeira, final, validade, titular e verificação de Luhn. O CVV é descartado na leitura e a imagem não é guardada; o número completo só é guardado, cifrado, se um administrador ligar a opção.
+- Doze idiomas em sete alfabetos (latino, cirílico, chinês, japonês, coreano, árabe e devanágari). O idioma é detectado pela leitura ou escolhido no envio.
+- Busca única em documentos e registros. Sequências longas de dígitos ficam mascaradas no índice de busca.
+
+Contas e operação
+
 - Contas por e-mail com convite, confirmação de e-mail, redefinição de senha, 2FA (TOTP), papéis configuráveis (administrador, revisor, leitor), bloqueio temporário e sessões revogáveis.
-- Auditoria de todas as ações, inclusive visualizações, com usuário, IP e horário.
+- Auditoria de todas as ações, inclusive visualizações e exportações, com usuário, IP e horário.
 - Retenção com exclusão automática, compressão opcional dos originais e limites de envio configuráveis em execução.
 - Interface em português e inglês, tema claro e escuro, utilizável no celular com uma mão.
 
@@ -63,11 +75,11 @@ Depois:
 docker compose up -d --build
 ```
 
-Abra `http://127.0.0.1:8090`. Na primeira visita aparece a configuração inicial, que cria o administrador. Os demais usuários entram por convite em *Usuários*.
+Abra `http://127.0.0.1:8091`. Na primeira visita aparece a configuração inicial, que cria o administrador. Os demais usuários entram por convite em *Usuários*.
 
 Só a interface é publicada no host. Para acessar de outros aparelhos da rede, use `LEGIVEL_BIND=0.0.0.0`. Para expor na internet, coloque um proxy com HTTPS na frente e ligue `LEGIVEL_PRODUCTION=true`, `LEGIVEL_SECURE_COOKIES=true` e `LEGIVEL_PUBLIC_URL` com o endereço `https://`. Com `LEGIVEL_PRODUCTION=true` a API se recusa a subir se faltar algum desses itens.
 
-E-mail em desenvolvimento: `docker compose --profile dev up -d mailpit` e, no `.env`, `LEGIVEL_SMTP_HOST=mailpit`, `LEGIVEL_SMTP_PORT=1025`, `LEGIVEL_SMTP_SECURITY=none`, `LEGIVEL_SMTP_FROM=legivel@exemplo.com.br`. As mensagens aparecem em `http://127.0.0.1:8025`. Sem SMTP, convites e links de redefinição aparecem na tela para o administrador copiar.
+E-mail em desenvolvimento: `docker compose --profile dev up -d mailpit` e, no `.env`, `LEGIVEL_SMTP_HOST=mailpit`, `LEGIVEL_SMTP_PORT=1025`, `LEGIVEL_SMTP_SECURITY=none`, `LEGIVEL_SMTP_FROM=legivel@exemplo.com.br`. As mensagens aparecem em `http://127.0.0.1:8026`. Sem SMTP, convites e links de redefinição aparecem na tela para o administrador copiar.
 
 Todas as variáveis estão em [.env.example](.env.example) e [docs/configuracao.md](docs/configuracao.md).
 
@@ -81,7 +93,7 @@ docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d --build pos
 .\scripts\api-gpu.ps1
 ```
 
-O script lê o `.env`, aponta a API para o PostgreSQL publicado em `127.0.0.1:5432` e para a pasta `storage`, que é a mesma montada no container, e sobe a API em `127.0.0.1:8000` com `LEGIVEL_OCR_DEVICE=auto`. Ele usa o ambiente `.venv` da instalação nativa abaixo.
+O script lê o `.env`, aponta a API para o PostgreSQL publicado em `127.0.0.1:5436` e para a pasta `storage`, que é a mesma montada no container, e sobe a API em `127.0.0.1:8001` com `LEGIVEL_OCR_DEVICE=auto`. Ele usa o ambiente `.venv` da instalação nativa abaixo.
 
 Para voltar ao modo só Docker: `docker compose up -d --build`. O `--build` é necessário porque o endereço da API é gravado no build da interface.
 
@@ -107,7 +119,7 @@ cd apps\api
 mkdir data
 python -m legivel.cli download-models
 alembic upgrade head
-uvicorn legivel.main:create_app --factory --host 127.0.0.1 --port 8000 --no-access-log
+uvicorn legivel.main:create_app --factory --host 127.0.0.1 --port 8001 --no-access-log
 ```
 
 E em outro:
@@ -129,9 +141,9 @@ Medido com `scripts/benchmark.py` em imagens sintéticas. Relatórios completos:
 
 | CPU | GPU | RAM | Sistema | Tempo por imagem, CPU | Tempo por imagem, GPU |
 | --- | --- | --- | --- | --- | --- |
-| AMD Ryzen 5 1600AF (6 núcleos / 12 threads) | AMD Radeon RX 590 GME, 8 GB, driver 31.0.21924.61 | 19,9 GB | Windows 10 Pro 22H2 | 2.743 a 4.858 ms nativo, 1.772 a 2.107 ms no Docker | 829 a 852 ms (DirectML) |
+| AMD Ryzen 5 1600AF (6 núcleos / 12 threads) | AMD Radeon RX 590 GME, 8 GB, driver 31.0.21924.61 | 19,9 GB | Windows 10 Pro 22H2 | 1.939 a 2.307 ms nativo, 1.808 a 2.090 ms no Docker | 445 a 530 ms (DirectML) |
 
-Os números nativos são da última rodada, feita com o Docker do Legível ligado na mesma máquina. Somando as três rodadas medidas, a CPU ficou entre 1.854 e 4.858 ms por imagem e a GPU entre 574 e 852 ms; a GPU foi mais rápida em todos os lotes de todas as rodadas.
+Com a GPU a leitura ficou de 3,9 a 4,4 vezes mais rápida, conforme o tamanho do lote. O primeiro envio num alfabeto que não seja o latino demora alguns segundos a mais, porque o modelo desse alfabeto é carregado na hora.
 
 Suporte a GPU: AMD, Intel e NVIDIA via DirectML no Windows (só a AMD acima foi testada) e NVIDIA via CUDA (implementado, não testado). Detalhes e solução de problemas em [docs/gpu.md](docs/gpu.md).
 
@@ -187,7 +199,8 @@ O CI também roda, a cada push e toda segunda-feira, gitleaks no histórico do G
 
 ## Limitações
 
-- RG, CNH e CPF brasileiros. Os layouts de RG variam por estado; modelos muito diferentes dos testados (SP, MG e o modelo nacional) podem sair com campos vazios e precisam de revisão manual.
+- Documentos brasileiros. Os layouts de RG variam por estado; modelos muito diferentes dos testados (SP, MG e o modelo nacional) podem sair com campos vazios e precisam de revisão manual.
+- Escrita à mão não é reconhecida; os módulos leem texto impresso.
 - A qualidade do OCR depende da foto. Documentos plastificados com reflexo e fotos tremidas são a maior fonte de erro.
 - GPU AMD e Intel só no Windows nativo. No Docker o OCR roda sempre em CPU.
 - O caminho CUDA não foi testado por falta de placa NVIDIA.
@@ -201,11 +214,13 @@ O CI também roda, a cada push e toda segunda-feira, gitleaks no histórico do G
 apps/api/legivel/
   auth/        contas, sessões, convites, 2FA e permissões
   db/          modelos, sessão e cópia SQLite para PostgreSQL
-  imaging/     pré-processamento e recortes
+  imaging/     pré-processamento, recortes e efeitos para releitura
+  modules/     livros, digitalização, finanças e cartões
   mail/        envio por SMTP e textos dos e-mails
-  ocr/         motores, escolha de dispositivo e status
+  ocr/         motores, idiomas, orientação, escolha de dispositivo e status
   parsers/     um parser por tipo de documento
-  services/    documentos, pessoas, auditoria, retenção e configurações
+  services/    documentos, registros, exportação, pessoas, auditoria, retenção e configurações
+  validators/  CPF, datas, boleto, CNPJ e cartões
 apps/api/migrations/   migrations Alembic
 apps/web/src/app/      rotas do App Router
 apps/web/e2e/          testes Playwright
