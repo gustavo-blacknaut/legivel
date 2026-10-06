@@ -1,5 +1,6 @@
 import argparse
 import json
+import os
 import platform
 import statistics
 import subprocess
@@ -11,6 +12,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
+MODEL_DIR = Path(os.environ.get("LEGIVEL_OCR_MODEL_DIR", ROOT / "models"))
 
 BATCHES = (1, 8, 32)
 SAMPLE_INTERVAL = 0.05
@@ -68,7 +70,7 @@ def run_single(device: str, batch: int) -> dict:
     images = synthetic_documents(batch)
     with PeakSampler(adapter.index if adapter else None) as sampler:
         started = time.perf_counter()
-        engine = RapidOcrEngine(DeviceChoice(device, adapter, "benchmark"), ROOT / "models")
+        engine = RapidOcrEngine(DeviceChoice(device, adapter, "benchmark"), MODEL_DIR)
         init_seconds = time.perf_counter() - started
         engine.read(images[0])
         durations = []
