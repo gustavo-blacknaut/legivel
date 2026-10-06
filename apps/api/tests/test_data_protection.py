@@ -5,13 +5,16 @@ import pytest
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from sqlalchemy import text
 
-from legivel.db.models import Document, DocumentImage, Person
+from legivel.db.models import CardDetail, Document, DocumentImage, Person, RecordPage
+from legivel.ocr.base import TextBox
 from legivel.security.crypto import KeyRing, generate_key
 from legivel.security.fields import blind_index, configure_fields
 from legivel.security.rotation import pending, reencrypt
 from legivel.storage.file_store import FileStore
 from tests.conftest import add_user, login, make_client
 from tests.synthetic import encode_jpeg, photograph, render_rg_back
+from tests.test_modules import CARD_BOXES
+from tests.test_modules import StaticEngine as StaticBoxes
 
 CPF = "52998224725"
 
@@ -139,3 +142,36 @@ def test_storage_rewrite_skips_current_files(tmp_path):
     store = FileStore(tmp_path, ring)
     stored = store.save("originals", b"x")
     assert not store.rewrite(stored.relative_path)
+
+
+def test_key_rotation_covers_records_and_cards(tmp_path, database_url):
+    old_key = generate_key()
+    with make_client(tmp_path, database_url, encryption_key=old_key) as client:
+        add_user(client.app, "admin@exemplo.com")
+        login(client, "admin@exemplo.com")
+        client.put("/api/settings", json={"values": {"store_card_numbers": True}})
+        client.app_state.ocr_engine = StaticBoxes(CARD_BOXES)
+        image = encode_jpeg(photograph(render_rg_back()))
+        files = [("pages", ("cartao.jpg", image, "image/jpeg"))]
+        record = client.post("/api/records", data={"module": "cards"}, files=files).json()
+        client.app_state.ocr_engine = StaticBoxes([TextBox("Relatório anual", 0.97, 40, 40, 900, 90)])
+        files = [("pages", ("pagina.jpg", image, "image/jpeg"))]
+        book = client.post("/api/records", data={"module": "books"}, files=files).json()
+    new_key = generate_key()
+    with make_client(tmp_path, database_url, encryption_key=new_key, encryption_old_keys=old_key) as client:
+        ring = client.app_state.settings.key_ring()
+        factory = client.app_state.session_factory
+        with factory() as session:
+            assert pending(session, ring)
+        report = reencrypt(factory, client.app_state.store, ring)
+        assert report.records == 2
+        with factory() as session:
+            assert not pending(session, ring)
+            page = session.get(RecordPage, book["pages"][0]["id"])
+            assert not ring.needs_rotation((tmp_path / "storage" / page.original_path).read_bytes())
+    with make_client(tmp_path, database_url, encryption_key=new_key) as client:
+        login(client, "admin@exemplo.com")
+        assert client.get(f"/api/records/{record['id']}").json()["card"]["holder_name"] == "MARIA S OLIVEIRA"
+        with client.app_state.session_factory() as session:
+            assert session.get(CardDetail, record["id"]).full_number == "4111111111111111"
+        assert client.get(f"/api/records/{book['id']}").json()["pages"][0]["text"]

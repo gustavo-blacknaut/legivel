@@ -80,7 +80,10 @@ def run_reencrypt(arguments: argparse.Namespace) -> None:
                 print("Dados já cifrados com a chave atual.")
                 return
     report = reencrypt(factory, FileStore(settings.storage_dir, ring), ring)
-    print(f"Pessoas: {report.people}. Documentos: {report.documents}. Arquivos regravados: {report.files}.")
+    print(
+        f"Pessoas: {report.people}. Documentos: {report.documents}. Registros: {report.records}. "
+        f"Arquivos regravados: {report.files}."
+    )
 
 
 def run_prepare_database(arguments: argparse.Namespace) -> None:
