@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { CircleAlert, CreditCard, Download, FileText, Save, Trash2 } from "lucide-react";
+import { CircleAlert, Download, FileText, Save, ShieldCheck, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useMemo, useState, type FormEvent } from "react";
@@ -162,29 +162,6 @@ export default function RecordPage() {
         )}
 
         <div className="stack">
-          {record.card && (
-            <section className="panel">
-              <div className="panel-head">
-                <h2>
-                  <CreditCard size={16} strokeWidth={1.75} /> {t.record.card}
-                </h2>
-              </div>
-              <dl className={`panel-body ${view.facts}`}>
-                <dt>{t.record.brand}</dt>
-                <dd>{record.card.brand || "—"}</dd>
-                <dt>{t.record.last4}</dt>
-                <dd className="mono">{record.card.last4 ? `•••• ${record.card.last4}` : "—"}</dd>
-                <dt>{t.record.holder}</dt>
-                <dd>{record.card.holder_name || "—"}</dd>
-                <dt>{t.record.expiry}</dt>
-                <dd className="mono">{record.card.expiry || "—"}</dd>
-                <dt>{t.record.luhn}</dt>
-                <dd>{record.card.luhn_valid ? t.record.valid : t.record.invalid}</dd>
-                <dt className={view.full}>{record.card.number_stored ? t.record.numberStored : t.record.numberNotStored}</dt>
-              </dl>
-            </section>
-          )}
-
           <form className="panel" onSubmit={save}>
             <div className="panel-head">
               <h2>{t.record.fields}</h2>
@@ -192,6 +169,12 @@ export default function RecordPage() {
                 {t.review.averageConfidence} <Confidence value={record.confidence} />
               </span>
             </div>
+            {record.card && (
+              <p className={`panel-body muted flush ${view.note}`}>
+                <ShieldCheck size={14} strokeWidth={1.75} />
+                {record.card.number_stored ? t.record.numberStored : t.record.numberNotStored}
+              </p>
+            )}
             {record.fields.length === 0 ? (
               <p className="panel-body muted flush">{t.record.noFields}</p>
             ) : (
@@ -227,8 +210,9 @@ export default function RecordPage() {
               <div className="panel-body stack">
                 {record.pages.map((item) => (
                   <details key={item.id} open={record.pages.length === 1}>
-                    <summary className={`muted ${styles.rawSummary}`}>
-                      <FileText size={14} strokeWidth={1.75} /> {t.record.pageText(item.number)}
+                    <summary className={`muted ${styles.rawSummary} ${view.note}`}>
+                      <FileText size={14} strokeWidth={1.75} />
+                      {t.record.pageText(item.number)}
                       {t.record.columns(item.columns ?? 1)}
                     </summary>
                     <pre className={view.text}>{item.text || t.record.emptyText}</pre>

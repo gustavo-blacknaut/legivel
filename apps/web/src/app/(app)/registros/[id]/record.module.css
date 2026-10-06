@@ -1,12 +1,4 @@
 .subtitle { display: inline-flex; flex-wrap: wrap; align-items: center; gap: var(--space-1); }
 .single { max-width: 880px; }
-.facts { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: var(--space-2) var(--space-4); margin: 0; font-size: var(--text-sm); }
-.facts dt { color: var(--color-text-3); }
-.facts dd { margin: 0; overflow-wrap: anywhere; }
-.facts .full { grid-column: 1 / -1; color: var(--color-text-2); }
+.note { display: flex; align-items: center; gap: var(--space-2); }
 .text { margin: var(--space-2) 0 0; padding: var(--space-3); max-height: 420px; overflow: auto; border-radius: var(--radius-md); background: var(--color-surface-2); font-size: var(--text-sm); line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; }
-
-@media (max-width: 720px) {
-  .facts { grid-template-columns: minmax(0, 1fr); gap: 0; }
-  .facts dd { margin-bottom: var(--space-2); }
-}

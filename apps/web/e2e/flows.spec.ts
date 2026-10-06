@@ -66,7 +66,8 @@ test.describe("administrador", () => {
 
   test("cartão mostra só o final e nunca o CVV", async ({ page }) => {
     await page.goto(`/registros/${seedState().card_record_id}`);
-    await expect(page.getByText("•••• 1111")).toBeVisible();
+    await expect(page.getByLabel("Número")).toHaveValue("•••• •••• •••• 1111");
+    await expect(page.getByText("Número completo não guardado")).toBeVisible();
     await expect(page.getByText("987")).toHaveCount(0);
     await expect(page.getByText("4111 1111 1111 1111")).toHaveCount(0);
   });

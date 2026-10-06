@@ -34,6 +34,11 @@ for (const width of WIDTHS) {
       ["documentos", "/documentos"],
       ["revisao", `/documentos/${state.document_id}`],
       ["novo-documento", "/novo"],
+      ["registros", "/registros"],
+      ["registro", `/registros/${state.record_id}`],
+      ["cartao", `/registros/${state.card_record_id}`],
+      ["leitura", "/leitura"],
+      ["busca", "/busca?q=cooperativa"],
       ["auditoria", "/auditoria"],
       ["conta", "/conta"],
       ["usuarios", "/usuarios"],
@@ -70,6 +75,8 @@ test("tema escuro", async ({ page }) => {
   await capture(page, path.join(OUTPUT, "1280"), "revisao-escuro");
   await settle(page, "/pessoas");
   await capture(page, path.join(OUTPUT, "1280"), "pessoas-escuro");
+  await settle(page, `/registros/${seedState().record_id}`);
+  await capture(page, path.join(OUTPUT, "1280"), "registro-escuro");
 });
 
 test("quadros do fluxo principal", async ({ page }) => {
