@@ -58,6 +58,9 @@ def warm_up_ocr(application: FastAPI) -> None:
         logging.getLogger("legivel.ocr").exception("Falha ao preparar o motor de OCR")
 
 
+ROUTERS = (setup_router, auth_router, users_router, router, records_router, public_router)
+
+
 def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or get_settings()
     configure_logging()
@@ -71,12 +74,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     application.state.login_throttle = LoginThrottle(max_attempts=IP_ATTEMPTS)
     application.state.mailer = Mailer(settings)
     application.add_exception_handler(RequestValidationError, reject_invalid_request)
-    application.include_router(setup_router)
-    application.include_router(auth_router)
-    application.include_router(users_router)
-    application.include_router(router)
-    application.include_router(records_router)
-    application.include_router(public_router)
+    for item in ROUTERS:
+        application.include_router(item)
 
     @application.get("/health", include_in_schema=False)
     def health() -> dict[str, str]:
@@ -120,6 +119,6 @@ def openapi_document() -> dict:
     from fastapi.openapi.utils import get_openapi
 
     application = FastAPI(title="Legível", version=__version__)
-    for item in (setup_router, auth_router, users_router, router, public_router):
+    for item in ROUTERS:
         application.include_router(item)
     return get_openapi(title="Legível", version=__version__, routes=application.routes)

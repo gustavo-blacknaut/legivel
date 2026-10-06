@@ -115,7 +115,7 @@ def run_export_openapi(arguments: argparse.Namespace) -> None:
     if arguments.output == "-":
         print(content, end="")
         return
-    Path(arguments.output).write_text(content, encoding="utf-8")
+    Path(arguments.output).write_text(content, encoding="utf-8", newline="\n")
     print(f"OpenAPI gravado em {arguments.output}")
 
 

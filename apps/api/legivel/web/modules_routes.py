@@ -23,6 +23,7 @@ from legivel.services.records import CardPolicy, create_record, delete_record, u
 from legivel.services.settings import RuntimeSettings
 from legivel.storage.file_store import FileStore
 from legivel.web.deps import RuntimeDep, SessionDep, get_store, pack_engines, permitted
+from legivel.web.schemas import PageOut
 
 router = APIRouter(prefix="/api", tags=["records"])
 logger = logging.getLogger(__name__)
@@ -245,7 +246,7 @@ def list_records(
     created_to: Annotated[date | None, Query(alias="to")] = None,
     page: Annotated[int, Query(ge=1)] = 1,
     page_size: Annotated[int, Query(ge=1, le=MAX_PAGE_SIZE)] = 50,
-):
+) -> PageOut[RecordSummary]:
     conditions = []
     if module:
         conditions.append(Record.module == module)
@@ -267,7 +268,7 @@ def list_records(
     items = session.scalars(
         statement.order_by(Record.created_at.desc(), Record.id.desc()).limit(page_size).offset((page - 1) * page_size)
     ).all()
-    return {"items": [record_summary(item) for item in items], "total": total, "page": page, "page_size": page_size}
+    return PageOut(items=[record_summary(item) for item in items], total=total, page=page, page_size=page_size)
 
 
 @router.post("/records", status_code=201)
