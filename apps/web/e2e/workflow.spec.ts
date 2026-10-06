@@ -29,6 +29,9 @@ test.describe("organização e ocultação", () => {
     await page.getByRole("textbox", { name: /^Nome completo/ }).focus();
     await expect(page.locator("canvas[role=img]")).toBeVisible();
     await expect.poll(() => page.locator("canvas[role=img]").evaluate((node) => (node as HTMLCanvasElement).width)).toBeGreaterThan(1);
+    await page.getByRole("textbox", { name: /^Nome completo/ }).fill("MARIANA REVISAO POR TECLADO");
+    await page.keyboard.press("Control+Enter");
+    await expect(page.getByText("Revisão salva.", { exact: true })).toBeVisible();
     await page.getByRole("button", { name: "Exportar com ocultação" }).click();
     const dialog = page.getByRole("dialog");
     await expect(dialog.getByRole("button", { name: "Baixar PDF" })).toBeDisabled();
