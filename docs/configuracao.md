@@ -62,7 +62,7 @@ Para desenvolvimento, `docker compose --profile dev up -d mailpit` sobe o [Mailp
 | `LEGIVEL_IMAGE_QUALITY` | `88` | não | sim | Qualidade JPEG das imagens processadas, recortes e originais recomprimidos. |
 | `LEGIVEL_COMPRESS_ORIGINALS` | `false` | não | sim | Regrava o original em JPEG, sem metadados, com no máximo `LEGIVEL_ORIGINAL_MAX_SIDE` pixels. |
 | `LEGIVEL_ORIGINAL_MAX_SIDE` | `3000` | não | não | Maior lado do original recomprimido. |
-| `LEGIVEL_RETENTION_DAYS` | `0` | não | sim | Apaga documentos processados há mais de N dias, com imagens e recortes. `0` mantém para sempre. |
+| `LEGIVEL_RETENTION_DAYS` | `0` | não | sim | Apaga documentos e registros dos módulos com mais de N dias, com imagens e recortes. `0` mantém para sempre. |
 | `LEGIVEL_RETENTION_INTERVAL_HOURS` | `24` | não | não | Intervalo da verificação de retenção. |
 | `LEGIVEL_BACKGROUND_JOBS` | `true` | não | não | Liga a retenção automática e o preparo do OCR. |
 

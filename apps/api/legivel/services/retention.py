@@ -7,9 +7,10 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from legivel.config import Settings
 from legivel.db.base import utc_now
-from legivel.db.models import Document, ScanLink, UserToken
+from legivel.db.models import Document, Record, ScanLink, UserToken
 from legivel.services.audit import record
 from legivel.services.documents import delete_document
+from legivel.services.records import delete_record
 from legivel.services.settings import load_runtime
 from legivel.storage.file_store import FileStore
 
@@ -38,6 +39,24 @@ def purge_expired_documents(session: Session, store: FileStore, days: int) -> in
     return removed
 
 
+def purge_expired_records(session: Session, store: FileStore, days: int) -> int:
+    if days <= 0:
+        return 0
+    cutoff = utc_now() - timedelta(days=days)
+    removed = 0
+    while True:
+        records = session.scalars(select(Record).where(Record.created_at < cutoff).order_by(Record.id).limit(BATCH_SIZE)).all()
+        if not records:
+            break
+        for item in records:
+            delete_record(session, store, item, None)
+            removed += 1
+    if removed:
+        record(session, None, "retention", "record", None, f"{removed} registro(s) com mais de {days} dia(s)")
+        session.commit()
+    return removed
+
+
 def purge_stale_tokens(session: Session) -> None:
     cutoff = utc_now() - timedelta(days=TOKEN_KEEP_DAYS)
     for token in session.scalars(select(UserToken).where(UserToken.expires_at < cutoff)):
@@ -50,11 +69,12 @@ def purge_stale_tokens(session: Session) -> None:
 def run_retention(factory: sessionmaker[Session], store: FileStore, settings: Settings) -> int:
     with factory() as session:
         runtime = load_runtime(session, settings)
-        removed = purge_expired_documents(session, store, runtime.retention_days)
+        documents = purge_expired_documents(session, store, runtime.retention_days)
+        records = purge_expired_records(session, store, runtime.retention_days)
         purge_stale_tokens(session)
-    if removed:
-        logger.info("Retenção: %s documento(s) excluído(s)", removed)
-    return removed
+    if documents or records:
+        logger.info("Retenção: %s documento(s) e %s registro(s) excluído(s)", documents, records)
+    return documents + records
 
 
 def start_retention_worker(factory: sessionmaker[Session], store: FileStore, settings: Settings) -> threading.Event:

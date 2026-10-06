@@ -4,11 +4,13 @@ from datetime import timedelta
 from PIL import Image
 
 from legivel.db.base import utc_now
-from legivel.db.models import Document, DocumentImage
+from legivel.db.models import Document, DocumentImage, Record
+from legivel.ocr.base import TextBox
 from legivel.security.crypto import is_encrypted
 from legivel.services.retention import run_retention
 from tests.conftest import add_user, login, make_client
 from tests.synthetic import encode_jpeg, photograph, render_rg_back
+from tests.test_modules import StaticEngine
 
 
 def png_bytes(size=(64, 64)) -> bytes:
@@ -101,6 +103,24 @@ def test_retention_deletes_old_documents(client):
     assert client.get(f"/api/documents/{recent['id']}").status_code == 200
     actions = {item["action"] for item in client.get("/api/audit").json()["items"]}
     assert "retention" in actions
+
+
+def test_retention_deletes_old_records_and_their_files(client):
+    login(client)
+    client.app_state.ocr_engine = StaticEngine([TextBox("Relatório anual", 0.97, 40, 40, 900, 90)])
+    files = [("pages", ("pagina.jpg", rg_photo(), "image/jpeg"))]
+    old = client.post("/api/records", data={"module": "books"}, files=files).json()
+    recent = client.post("/api/records", data={"module": "books"}, files=files).json()
+    with client.app_state.session_factory() as session:
+        item = session.get(Record, old["id"])
+        item.created_at = utc_now() - timedelta(days=40)
+        paths = [page.original_path for page in item.pages]
+        session.commit()
+    client.put("/api/settings", json={"values": {"retention_days": 30}})
+    assert run_retention(client.app_state.session_factory, client.app_state.store, client.app_state.settings) == 1
+    assert client.get(f"/api/records/{old['id']}").status_code == 404
+    assert client.get(f"/api/records/{recent['id']}").status_code == 200
+    assert not any((client.app_state.settings.storage_dir / path).exists() for path in paths)
 
 
 def test_logo_upload_and_public_url(client):
