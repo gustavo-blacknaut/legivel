@@ -1,15 +1,13 @@
 import importlib.util
 from pathlib import Path
 
-import cv2
-import numpy as np
 import pytest
 from PIL import Image, ImageDraw
 
 from legivel.modules.base import ProcessingContext
 from legivel.modules.registry import get_module
 from legivel.validators.financial import format_bank_line
-from tests.synthetic import encode_jpeg, load_font, photograph
+from tests.synthetic import encode_jpeg, load_font, photograph, render_card, render_two_columns, to_bgr
 from tests.test_validators_modules import build_bank_line
 
 pytestmark = [
@@ -17,32 +15,6 @@ pytestmark = [
     pytest.mark.skipif(importlib.util.find_spec("rapidocr") is None, reason="RapidOCR não instalado"),
 ]
 
-LEFT_COLUMN = [
-    "A cooperativa reuniu os produtores",
-    "da região para discutir a safra",
-    "e os novos contratos de venda.",
-]
-RIGHT_COLUMN = [
-    "Na segunda parte da reunião foram",
-    "apresentados os resultados do ano",
-    "e as metas para o próximo ciclo.",
-]
-
-
-def to_bgr(image: Image.Image) -> np.ndarray:
-    return cv2.cvtColor(np.asarray(image), cv2.COLOR_RGB2BGR)
-
-
-def render_two_columns() -> bytes:
-    page = Image.new("RGB", (1600, 1100), (250, 248, 242))
-    draw = ImageDraw.Draw(page)
-    draw.text((420, 60), "RELATORIO DA COOPERATIVA", fill=(20, 20, 20), font=load_font(54))
-    body = load_font(34)
-    for index, line in enumerate(LEFT_COLUMN):
-        draw.text((80, 220 + index * 60), line, fill=(30, 30, 30), font=body)
-    for index, line in enumerate(RIGHT_COLUMN):
-        draw.text((860, 220 + index * 60), line, fill=(30, 30, 30), font=body)
-    return encode_jpeg(photograph(to_bgr(page), angle_degrees=3, tilt=0.03))
 
 
 def render_bank_slip(line: str) -> bytes:
@@ -55,19 +27,6 @@ def render_bank_slip(line: str) -> bytes:
     draw.text((60, 205), "ESCOLA MODELO LTDA", fill=(10, 10, 10), font=value)
     draw.text((60, 330), format_bank_line(line), fill=(10, 10, 10), font=load_font(40))
     return encode_jpeg(photograph(to_bgr(page), angle_degrees=2, tilt=0.02))
-
-
-def render_card() -> bytes:
-    card = Image.new("RGB", (1200, 760), (28, 32, 36))
-    draw = ImageDraw.Draw(card)
-    draw.text((70, 60), "BANCO EXEMPLO", fill=(240, 240, 240), font=load_font(48))
-    draw.text((70, 330), "4111 1111 1111 1111", fill=(245, 245, 245), font=load_font(78))
-    draw.text((560, 470), "VALID THRU 08/29", fill=(230, 230, 230), font=load_font(40))
-    draw.text((70, 600), "MARIA S OLIVEIRA", fill=(245, 245, 245), font=load_font(52))
-    draw.text((900, 600), "CVV 987", fill=(200, 200, 200), font=load_font(36))
-    background = Image.new("RGB", (1700, 1200), (225, 222, 215))
-    background.paste(card, (250, 220))
-    return encode_jpeg(to_bgr(background))
 
 
 def render_english() -> bytes:

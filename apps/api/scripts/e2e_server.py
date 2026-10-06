@@ -20,7 +20,7 @@ from legivel.security.fields import configure_fields
 from legivel.services.scan_links import create_link
 from legivel.services.settings import load_runtime
 from legivel.storage.file_store import FileStore
-from scripts.seed_demo import seed_people, seed_scanned
+from scripts.seed_demo import seed_people, seed_readings, seed_scanned
 
 
 def prepare(directory: Path, accounts: list[dict]) -> dict:
@@ -51,10 +51,17 @@ def prepare(directory: Path, accounts: list[dict]) -> dict:
     seed_people(factory, 60, generator)
     engine = get_ocr_engine(settings.ocr_engine, settings.ocr_device, settings.ocr_model_dir, settings.ocr_languages)
     documents = seed_scanned(factory, store, engine, generator, 2)
+    records = seed_readings(factory, store, engine)
     with factory() as session:
         link = create_link(session, None, "Admissão de teste", 48)
         person_id = session.get(Document, documents[0]).person_id
-    return {"document_id": documents[0], "person_id": person_id, "scan_token": link.token}
+    return {
+        "document_id": documents[0],
+        "person_id": person_id,
+        "scan_token": link.token,
+        "record_id": records[0],
+        "card_record_id": records[1],
+    }
 
 
 def main() -> None:

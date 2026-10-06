@@ -5,14 +5,17 @@ from datetime import UTC, date, datetime, timedelta
 from sqlalchemy.orm import Session, sessionmaker
 
 from legivel.config import get_settings
-from legivel.db.models import Document, DocumentStatus, ImageSide, Person
+from legivel.db.models import Document, DocumentStatus, ImageSide, Person, Record
 from legivel.db.session import build_engine, build_session_factory
+from legivel.modules.base import ProcessingContext
+from legivel.modules.registry import get_module
 from legivel.ocr.base import OcrEngine
 from legivel.security.fields import configure_fields
 from legivel.services.documents import UploadedSide, process_document
+from legivel.services.records import CardPolicy, create_record
 from legivel.storage.file_store import FileStore
 from legivel.validators.cpf import calculate_check_digits
-from tests.synthetic import encode_jpeg, photograph, render_rg_back
+from tests.synthetic import encode_jpeg, photograph, render_card, render_rg_back, render_two_columns
 
 FIRST_NAMES = (
     "ANA", "BRUNO", "CARLA", "DANIEL", "EDUARDA", "FELIPE", "GABRIELA", "HUGO", "ISABELA", "JOAO", "KARINA",
@@ -96,6 +99,16 @@ def seed_scanned(
     return created
 
 
+def seed_readings(factory: sessionmaker[Session], store: FileStore, engine: OcrEngine) -> list[int]:
+    context = ProcessingContext(engine_for_pack=lambda pack: engine, enabled_languages=["pt", "en", "es"])
+    created = []
+    for module, image in (("books", render_two_columns()), ("cards", render_card())):
+        with factory() as session:
+            record: Record = create_record(session, store, get_module(module), context, [image], None, CardPolicy(False))
+            created.append(record.id)
+    return created
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Popula uma instância de demonstração com dados fictícios")
     parser.add_argument("--people", type=int, default=2400)
@@ -112,6 +125,7 @@ def main() -> None:
     if arguments.scanned:
         engine = get_ocr_engine(settings.ocr_engine, settings.ocr_device, settings.ocr_model_dir, settings.ocr_languages)
         seed_scanned(factory, store, engine, generator, arguments.scanned)
+        seed_readings(factory, store, engine)
     print(f"{arguments.people} pessoas fictícias e {arguments.scanned} documento(s) lidos pelo OCR")
 
 
