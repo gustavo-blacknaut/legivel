@@ -1,4 +1,4 @@
-FROM node:24.21.0-alpine3.24 AS deps
+FROM node:26.10.0-alpine3.24 AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --no-audit --no-fund
@@ -10,7 +10,7 @@ ENV LEGIVEL_API_URL=$LEGIVEL_API_URL \
 COPY . .
 RUN npm run build
 
-FROM node:24.21.0-alpine3.24 AS runtime
+FROM node:26.10.0-alpine3.24 AS runtime
 ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \
     PORT=3000 \
