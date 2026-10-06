@@ -3,11 +3,14 @@
 import {
   FilePlus2,
   Files,
+  Library,
   LogOut,
   Menu,
   PanelLeftClose,
   PanelLeftOpen,
+  ScanText,
   ScrollText,
+  Search,
   Settings,
   UserCog,
   Users,
@@ -97,6 +100,11 @@ export function AppShell({ children }: { children: ReactNode }) {
     { href: "/documentos", label: t.nav.documents, icon: Files },
     { href: "/novo", label: t.nav.newDocument, icon: FilePlus2, permission: "documents.upload" },
   ];
+  const reading: NavEntry[] = [
+    { href: "/registros", label: t.nav.readings, icon: Library },
+    { href: "/leitura", label: t.nav.newReading, icon: ScanText, permission: "documents.upload" },
+    { href: "/busca", label: t.nav.search, icon: Search },
+  ];
   const secondary: NavEntry[] = [
     { href: "/auditoria", label: t.nav.audit, icon: ScrollText, permission: "audit.view" },
     { href: "/usuarios", label: t.nav.users, icon: UserCog, permission: "users.manage" },
@@ -122,6 +130,12 @@ export function AppShell({ children }: { children: ReactNode }) {
         <nav className={styles.nav}>
           <span className={styles.section}>{t.nav.records}</span>
           {primary
+            .filter((entry) => !entry.permission || can(entry.permission))
+            .map((entry) => (
+              <NavItem key={entry.href} entry={entry} collapsed={collapsed} active={isActive(entry.href)} />
+            ))}
+          <span className={styles.section}>{t.nav.reading}</span>
+          {reading
             .filter((entry) => !entry.permission || can(entry.permission))
             .map((entry) => (
               <NavItem key={entry.href} entry={entry} collapsed={collapsed} active={isActive(entry.href)} />

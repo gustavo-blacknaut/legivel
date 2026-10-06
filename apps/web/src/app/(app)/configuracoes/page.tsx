@@ -21,6 +21,7 @@ type FieldSpec =
   | { key: string; label: string; kind: "boolean" }
   | { key: string; label: string; kind: "select"; options: { value: string; label: string }[]; hint?: string }
   | { key: string; label: string; kind: "formats" }
+  | { key: string; label: string; kind: "languages"; hint?: string }
   | { key: string; label: string; kind: "timezone"; zones: string[]; hint?: string };
 
 const BRAZIL_ZONES = [
@@ -28,6 +29,7 @@ const BRAZIL_ZONES = [
   "America/Cuiaba", "America/Campo_Grande", "America/Porto_Velho", "America/Boa_Vista", "America/Rio_Branco", "America/Noronha",
 ];
 const ALL_FORMATS = ["jpeg", "png", "webp", "heic"];
+const READING_LANGUAGES = ["pt", "en", "es", "fr", "de", "it", "ru", "zh", "ja", "ko", "ar", "hi"];
 
 function display(value: unknown, t: Messages): string {
   if (typeof value === "boolean") return value ? t.common.yes : t.common.no;
@@ -101,6 +103,28 @@ function SettingsSection({ title, fields, info, hint, action, children }: Sectio
                 </label>
                 {footer}
               </div>
+            );
+          }
+          if (field.kind === "languages") {
+            const selected = String(draft[field.key] ?? "").split(",").filter(Boolean);
+            const toggle = (code: string) => {
+              const next = selected.includes(code) ? selected.filter((item) => item !== code) : [...selected, code];
+              set(field.key, READING_LANGUAGES.filter((item) => next.includes(item)).join(","));
+            };
+            return (
+              <fieldset key={field.key} className={`field span-2 ${styles.fieldset}`}>
+                <legend className="field-label">{field.label}</legend>
+                <div className={styles.checks}>
+                  {READING_LANGUAGES.map((code) => (
+                    <label key={code} className="check">
+                      <input type="checkbox" checked={selected.includes(code)} onChange={() => toggle(code)} />
+                      {t.settings.languageNames[code]}
+                    </label>
+                  ))}
+                </div>
+                {field.hint && <span className="field-hint">{field.hint}</span>}
+                {footer}
+              </fieldset>
             );
           }
           if (field.kind === "formats") {
@@ -381,6 +405,7 @@ export default function SettingsPage() {
   const themeOptions = (["system", "light", "dark"] as const).map((value) => ({ value, label: t.account.themes[value] }));
   const languageOptions = (["pt-BR", "en"] as const).map((value) => ({ value, label: t.account.languages[value] }));
   const deviceOptions = (["auto", "cpu", "gpu"] as const).map((value) => ({ value, label: t.settings.devices[value] }));
+  const readingOptions = ["auto", ...READING_LANGUAGES].map((value) => ({ value, label: t.settings.languageNames[value] ?? value }));
 
   return (
     <div className={page.page}>
@@ -410,6 +435,17 @@ export default function SettingsPage() {
         >
           {ocrStatus.details}
         </SettingsSection>
+        <SettingsSection
+          key={`reading-${settings.dataUpdatedAt}`}
+          title={t.settings.reading}
+          info={info}
+          hint={t.settings.storeCardNumbersHint}
+          fields={[
+            { key: "reading_languages", label: t.settings.readingLanguages, kind: "languages", hint: t.settings.readingLanguagesHint },
+            { key: "default_reading_language", label: t.settings.defaultReadingLanguage, kind: "select", options: readingOptions },
+            { key: "store_card_numbers", label: t.settings.storeCardNumbers, kind: "boolean" },
+          ]}
+        />
         <SettingsSection
           key={`uploads-${settings.dataUpdatedAt}`}
           title={t.settings.uploads}

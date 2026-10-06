@@ -9,7 +9,7 @@ export const READER_STATE = path.join(STATE_DIR, "reader.json");
 export const WIDTHS = [360, 375, 768, 1024, 1280, 1920] as const;
 export const ZOOMED = { width: 640, label: "1280 com zoom de 200%" };
 
-export type SeedState = { document_id: number; person_id: number; scan_token: string };
+export type SeedState = { document_id: number; person_id: number; scan_token: string; record_id: number; card_record_id: number };
 
 export function seedState(): SeedState {
   return JSON.parse(readFileSync(path.join(STATE_DIR, "state.json"), "utf-8")) as SeedState;

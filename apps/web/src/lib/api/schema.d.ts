@@ -796,6 +796,128 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/modules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Modules */
+        get: operations["modules_api_modules_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/languages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Languages */
+        get: operations["languages_api_languages_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/records": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Records */
+        get: operations["list_records_api_records_get"];
+        put?: never;
+        /** Upload Record */
+        post: operations["upload_record_api_records_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/records/{record_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Show Record */
+        get: operations["show_record_api_records__record_id__get"];
+        /** Review Record */
+        put: operations["review_record_api_records__record_id__put"];
+        post?: never;
+        /** Remove Record */
+        delete: operations["remove_record_api_records__record_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/records/{record_id}/export/{export_type}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Export Record */
+        get: operations["export_record_api_records__record_id__export__export_type__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/record-pages/{page_id}/{variant}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Record Page Image */
+        get: operations["record_page_image_api_record_pages__page_id___variant__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Search */
+        get: operations["search_api_search_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/public/instance": {
         parameters: {
             query?: never;
@@ -942,6 +1064,38 @@ export interface components {
         Body_upload_logo_api_settings_logo_put: {
             /** Logo */
             logo: string;
+        };
+        /** Body_upload_record_api_records_post */
+        Body_upload_record_api_records_post: {
+            /** Module */
+            module: string;
+            /** Pages */
+            pages: string[];
+            /**
+             * Language
+             * @default
+             */
+            language: string;
+            /**
+             * Options
+             * @default {}
+             */
+            options: string;
+        };
+        /** CardOut */
+        CardOut: {
+            /** Brand */
+            brand: string | null;
+            /** Last4 */
+            last4: string | null;
+            /** Holder Name */
+            holder_name: string | null;
+            /** Expiry */
+            expiry: string | null;
+            /** Luhn Valid */
+            luhn_valid: boolean;
+            /** Number Stored */
+            number_stored: boolean;
         };
         /** DeliveryOut */
         DeliveryOut: {
@@ -1165,6 +1319,15 @@ export interface components {
              */
             expires_at: string;
         };
+        /** LanguageOut */
+        LanguageOut: {
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /** Pack */
+            pack: string;
+        };
         /** LoginIn */
         LoginIn: {
             /** Email */
@@ -1180,6 +1343,29 @@ export interface components {
              */
             status: "ok" | "two_factor";
             user?: components["schemas"]["UserOut"] | null;
+        };
+        /** ModuleOut */
+        ModuleOut: {
+            /** Key */
+            key: string;
+            /** Name */
+            name: string;
+            /** Description */
+            description: string;
+            /** Icon */
+            icon: string;
+            /** Multi Page */
+            multi_page: boolean;
+            /** Max Pages */
+            max_pages: number;
+            /** Page Labels */
+            page_labels: string[];
+            /** Exports */
+            exports: string[];
+            /** Kinds */
+            kinds: {
+                [key: string]: string;
+            };
         };
         /** OtherDataOut */
         OtherDataOut: {
@@ -1224,6 +1410,17 @@ export interface components {
         PageOut_PersonOut_: {
             /** Items */
             items: components["schemas"]["PersonOut"][];
+            /** Total */
+            total: number;
+            /** Page */
+            page: number;
+            /** Page Size */
+            page_size: number;
+        };
+        /** PageOut[RecordSummary] */
+        PageOut_RecordSummary_: {
+            /** Items */
+            items: components["schemas"]["RecordSummary"][];
             /** Total */
             total: number;
             /** Page */
@@ -1337,6 +1534,110 @@ export interface components {
              */
             expires_at: string;
         };
+        /** RecordDetail */
+        RecordDetail: {
+            /** Id */
+            id: number;
+            /** Module */
+            module: string;
+            /** Kind */
+            kind: string | null;
+            /** Title */
+            title: string | null;
+            /** Status */
+            status: string;
+            /** Language */
+            language: string | null;
+            /** Confidence */
+            confidence: number | null;
+            /** Page Count */
+            page_count: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Thumbnail Url */
+            thumbnail_url: string | null;
+            /** Module Name */
+            module_name: string;
+            /** Kind Label */
+            kind_label: string | null;
+            /** Fields */
+            fields: components["schemas"]["RecordField"][];
+            /** Issues */
+            issues: {
+                [key: string]: string;
+            }[];
+            /** Pages */
+            pages: components["schemas"]["RecordPageOut"][];
+            /** Exports */
+            exports: string[];
+            card: components["schemas"]["CardOut"] | null;
+        };
+        /** RecordField */
+        RecordField: {
+            /** Name */
+            name: string;
+            /** Label */
+            label: string;
+            /** Kind */
+            kind: string;
+            /** Value */
+            value: string;
+            /** Confidence */
+            confidence: number | null;
+            /** Issues */
+            issues: string[];
+        };
+        /** RecordPageOut */
+        RecordPageOut: {
+            /** Id */
+            id: number;
+            /** Number */
+            number: number;
+            /** Thumbnail Url */
+            thumbnail_url: string | null;
+            /** Full Url */
+            full_url: string | null;
+            /** Text */
+            text: string;
+            /** Columns */
+            columns: number | null;
+        };
+        /** RecordReviewIn */
+        RecordReviewIn: {
+            /** Values */
+            values: {
+                [key: string]: string;
+            };
+        };
+        /** RecordSummary */
+        RecordSummary: {
+            /** Id */
+            id: number;
+            /** Module */
+            module: string;
+            /** Kind */
+            kind: string | null;
+            /** Title */
+            title: string | null;
+            /** Status */
+            status: string;
+            /** Language */
+            language: string | null;
+            /** Confidence */
+            confidence: number | null;
+            /** Page Count */
+            page_count: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Thumbnail Url */
+            thumbnail_url: string | null;
+        };
         /** RecoveryCodesOut */
         RecoveryCodesOut: {
             /** Recovery Codes */
@@ -1417,6 +1718,33 @@ export interface components {
             used_at: string | null;
             /** Document Id */
             document_id: number | null;
+        };
+        /** SearchHit */
+        SearchHit: {
+            /** Module */
+            module: string;
+            /** Id */
+            id: number;
+            /** Title */
+            title: string;
+            /** Subtitle */
+            subtitle: string;
+            /** Status */
+            status: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Url */
+            url: string;
+        };
+        /** SearchOut */
+        SearchOut: {
+            /** Items */
+            items: components["schemas"]["SearchHit"][];
+            /** Total */
+            total: number;
         };
         /** SessionOut */
         SessionOut: {
@@ -3206,6 +3534,313 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    modules_api_modules_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModuleOut"][];
+                };
+            };
+        };
+    };
+    languages_api_languages_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LanguageOut"][];
+                };
+            };
+        };
+    };
+    list_records_api_records_get: {
+        parameters: {
+            query?: {
+                module?: string;
+                kind?: string;
+                q?: string;
+                status?: string;
+                from?: string | null;
+                to?: string | null;
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageOut_RecordSummary_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    upload_record_api_records_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_upload_record_api_records_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecordDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    show_record_api_records__record_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                record_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecordDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    review_record_api_records__record_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                record_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecordReviewIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecordDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_record_api_records__record_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                record_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    export_record_api_records__record_id__export__export_type__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                record_id: number;
+                export_type: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    record_page_image_api_record_pages__page_id___variant__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                page_id: number;
+                variant: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    search_api_search_get: {
+        parameters: {
+            query?: {
+                q?: string;
+                module?: string;
+                status?: string;
+                from?: string | null;
+                to?: string | null;
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SearchOut"];
+                };
             };
             /** @description Validation Error */
             422: {

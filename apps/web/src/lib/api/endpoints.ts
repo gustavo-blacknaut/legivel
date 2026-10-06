@@ -24,6 +24,12 @@ export type Delivery = Schemas["DeliveryOut"];
 export type TwoFactorSetup = Schemas["TwoFactorSetupOut"];
 export type Verification = Schemas["VerificationOut"];
 export type Role = User["role"];
+export type ModuleInfo = Schemas["ModuleOut"];
+export type ReadingLanguage = Schemas["LanguageOut"];
+export type RecordSummary = Schemas["RecordSummary"];
+export type RecordDetail = Schemas["RecordDetail"];
+export type RecordField = Schemas["RecordField"];
+export type SearchHit = Schemas["SearchHit"];
 export type Page<T> = { items: T[]; total: number; page: number; page_size: number };
 
 export type ListQuery = {
@@ -38,6 +44,8 @@ export type ListQuery = {
   page_size?: number;
   action?: string;
   entity?: string;
+  module?: string;
+  kind?: string;
 };
 
 export const api = {
@@ -115,6 +123,22 @@ export const api = {
   scanLinks: () => unwrap(client.GET("/api/scan-links")),
   createScanLink: (label: string, hours: number) => unwrap(client.POST("/api/scan-links", { body: { label, hours } })),
   revokeScanLink: (id: number) => unwrap(client.DELETE("/api/scan-links/{link_id}", { params: { path: { link_id: id } } })),
+  modules: () => unwrap(client.GET("/api/modules")),
+  readingLanguages: () => unwrap(client.GET("/api/languages")),
+  records: (query: ListQuery) => unwrap(client.GET("/api/records", { params: { query } })) as Promise<Page<RecordSummary>>,
+  record: (id: number) => unwrap(client.GET("/api/records/{record_id}", { params: { path: { record_id: id } } })),
+  saveRecord: (id: number, values: Record<string, string>) =>
+    unwrap(client.PUT("/api/records/{record_id}", { params: { path: { record_id: id } }, body: { values } })),
+  deleteRecord: (id: number) => unwrap(client.DELETE("/api/records/{record_id}", { params: { path: { record_id: id } } })),
+  uploadRecord: (form: FormData) => sendForm<RecordDetail>("/api/records", form),
+  exportRecord: (id: number, type: string) =>
+    unwrap(
+      client.GET("/api/records/{record_id}/export/{export_type}", {
+        params: { path: { record_id: id, export_type: type } },
+        parseAs: "blob",
+      }),
+    ) as Promise<Blob>,
+  search: (query: ListQuery) => unwrap(client.GET("/api/search", { params: { query } })),
   publicLink: (token: string) => unwrap(client.GET("/api/public/scan/{token}", { params: { path: { token } } })),
   publicUpload: (token: string, form: FormData) =>
     sendForm<{ status: string }>(`/api/public/scan/${encodeURIComponent(token)}`, form),

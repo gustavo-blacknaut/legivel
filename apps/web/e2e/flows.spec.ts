@@ -4,6 +4,7 @@ import path from "node:path";
 import { ADMIN_STATE, READER_STATE, seedState } from "./support";
 
 const SAMPLE = path.join(__dirname, "fixtures", "rg-verso-ficticio.jpg");
+const PAGE_SAMPLE = path.join(__dirname, "fixtures", "pagina-ficticia.jpg");
 
 test.describe("administrador", () => {
   test.use({ storageState: ADMIN_STATE });
@@ -42,6 +43,32 @@ test.describe("administrador", () => {
     await expect(page.getByText("Alterações não salvas")).toBeVisible();
     await page.getByRole("button", { name: "Confirmar revisão" }).click();
     await expect(page.getByText("Revisão salva.")).toBeVisible();
+  });
+
+  test("lê uma página de livro, revisa, exporta e encontra na busca", async ({ page }) => {
+    await page.goto("/leitura");
+    await page.getByText("Livros e textos").click();
+    const [chooser] = await Promise.all([page.waitForEvent("filechooser"), page.getByRole("button", { name: /Escolher arquivo/ }).first().click()]);
+    await chooser.setFiles({ name: "pagina.jpg", mimeType: "image/jpeg", buffer: readFileSync(PAGE_SAMPLE) });
+    await page.getByRole("button", { name: "Ler", exact: true }).click();
+    await expect(page).toHaveURL(/\/registros\/\d+/, { timeout: 60_000 });
+    await expect(page.getByRole("heading", { name: "Dados lidos" })).toBeVisible();
+    await expect(page.getByText(/cooperativa/i).first()).toBeVisible();
+    const title = page.getByLabel(/Título/).first();
+    await title.fill("Relatório fictício revisado");
+    await page.getByRole("button", { name: "Confirmar revisão" }).click();
+    await expect(page.getByText("Revisão salva.")).toBeVisible();
+    const [download] = await Promise.all([page.waitForEvent("download"), page.getByRole("button", { name: "Exportar TXT" }).click()]);
+    expect(download.suggestedFilename()).toMatch(/\.txt$/);
+    await page.goto("/busca?q=revisado");
+    await expect(page.getByRole("link", { name: /Relatório fictício revisado/ })).toBeVisible();
+  });
+
+  test("cartão mostra só o final e nunca o CVV", async ({ page }) => {
+    await page.goto(`/registros/${seedState().card_record_id}`);
+    await expect(page.getByText("•••• 1111")).toBeVisible();
+    await expect(page.getByText("987")).toHaveCount(0);
+    await expect(page.getByText("4111 1111 1111 1111")).toHaveCount(0);
   });
 
   test("apagar pessoa exige digitar nome ou CPF", async ({ page }) => {
@@ -111,6 +138,11 @@ test.describe("leitor", () => {
     await page.goto(`/documentos/${seedState().document_id}`);
     await expect(page.getByText("Seu papel permite apenas consultar este documento.")).toBeVisible();
     await expect(page.getByRole("button", { name: "Confirmar revisão" })).toHaveCount(0);
+    await page.goto(`/registros/${seedState().record_id}`);
+    await expect(page.getByText("Seu papel permite apenas consultar este registro.")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Nova leitura" })).toHaveCount(0);
+    await page.goto("/leitura");
+    await expect(page.getByRole("heading", { name: "Sem permissão" })).toBeVisible();
     await page.goto("/usuarios");
     await expect(page.getByRole("heading", { name: "Sem permissão" })).toBeVisible();
     const response = await page.request.get("/api/users");
