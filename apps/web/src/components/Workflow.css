@@ -15,8 +15,13 @@
 .workflow-form input, .workflow-form select { width: 100%; min-width: 0; }
 
 .workflow-row > * { min-width: 0; max-width: 100%; }
+.workflow-row > .workflow-link { min-width: 44px; }
 .workflow-row .field { flex: 1 1 160px; }
 .workflow-stack p { overflow-wrap: anywhere; }
 
 .workflow-assessment { width: 100%; }
 .workflow-assessment > p, .workflow-assessment > small { margin: 0 .75rem; }
+.workflow-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; }
+.workflow-stats dt { color: var(--color-text-2); }
+.workflow-stats dd { margin: .25rem 0; font-size: 1.15rem; }
+.workflow-stack dl dd { overflow-wrap: anywhere; }

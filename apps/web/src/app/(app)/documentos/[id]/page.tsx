@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useMemo, useState, type FormEvent } from "react";
 import { FieldCrop, type FieldRegion } from "@/components/FieldCrop";
+import { ReviewHistory } from "@/components/ReviewHistory";
 import { OrganizationEditor } from "@/components/Organization";
 import { RedactionExport } from "@/components/RedactionExport";
 import { useWorkflowText } from "@/lib/workflow-text";
@@ -275,6 +276,7 @@ export default function DocumentPage() {
             )}
           </form>
 
+          <ReviewHistory entity="document" id={document.id} />
           <OrganizationEditor entity="document" id={document.id} />
           <RedactionExport key={document.id} entity="document" id={document.id} pages={document.pages} />
           <section className="panel">

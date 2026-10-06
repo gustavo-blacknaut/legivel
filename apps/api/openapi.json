@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Legível",
-    "version": "0.2.0"
+    "version": "0.3.0"
   },
   "paths": {
     "/api/setup": {
@@ -3634,6 +3634,405 @@
           }
         }
       }
+    },
+    "/api/history/{entity}/{entity_id}": {
+      "get": {
+        "tags": [
+          "maintenance"
+        ],
+        "summary": "History",
+        "operationId": "history_api_history__entity___entity_id__get",
+        "parameters": [
+          {
+            "name": "entity",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "document",
+                "record"
+              ],
+              "type": "string",
+              "title": "Entity"
+            }
+          },
+          {
+            "name": "entity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Entity Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/history/{entity}/{entity_id}/{revision_id}/undo": {
+      "post": {
+        "tags": [
+          "maintenance"
+        ],
+        "summary": "Undo",
+        "operationId": "undo_api_history__entity___entity_id___revision_id__undo_post",
+        "parameters": [
+          {
+            "name": "entity",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "document",
+                "record"
+              ],
+              "type": "string",
+              "title": "Entity"
+            }
+          },
+          {
+            "name": "entity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Entity Id"
+            }
+          },
+          {
+            "name": "revision_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Revision Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/pdf/inspect": {
+      "post": {
+        "tags": [
+          "maintenance"
+        ],
+        "summary": "Pdf Info",
+        "operationId": "pdf_info_api_pdf_inspect_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_pdf_info_api_pdf_inspect_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/pdf/render": {
+      "post": {
+        "tags": [
+          "maintenance"
+        ],
+        "summary": "Pdf Pages",
+        "operationId": "pdf_pages_api_pdf_render_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_pdf_pages_api_pdf_render_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/export/batch": {
+      "post": {
+        "tags": [
+          "maintenance"
+        ],
+        "summary": "Batch",
+        "operationId": "batch_api_export_batch_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/maintenance": {
+      "get": {
+        "tags": [
+          "maintenance"
+        ],
+        "summary": "Maintenance",
+        "operationId": "maintenance_api_maintenance_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/maintenance/cleanup": {
+      "post": {
+        "tags": [
+          "maintenance"
+        ],
+        "summary": "Cleanup",
+        "operationId": "cleanup_api_maintenance_cleanup_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/maintenance/backups": {
+      "post": {
+        "tags": [
+          "maintenance"
+        ],
+        "summary": "Backup",
+        "operationId": "backup_api_maintenance_backups_post",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_backup_api_maintenance_backups_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/maintenance/backups/verify": {
+      "post": {
+        "tags": [
+          "maintenance"
+        ],
+        "summary": "Verify",
+        "operationId": "verify_api_maintenance_backups_verify_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_verify_api_maintenance_backups_verify_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/maintenance/backups/restore": {
+      "post": {
+        "tags": [
+          "maintenance"
+        ],
+        "summary": "Restore",
+        "operationId": "restore_api_maintenance_backups_restore_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_restore_api_maintenance_backups_restore_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "maintenance"
+        ],
+        "summary": "Cancel Restore",
+        "operationId": "cancel_restore_api_maintenance_backups_restore_delete",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -3852,6 +4251,56 @@
         ],
         "title": "AuditOut"
       },
+      "BatchIn": {
+        "properties": {
+          "entity": {
+            "type": "string",
+            "enum": [
+              "document",
+              "record"
+            ],
+            "title": "Entity"
+          },
+          "ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "maxItems": 100,
+            "minItems": 1,
+            "title": "Ids"
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "csv",
+              "xlsx",
+              "zip"
+            ],
+            "title": "Format"
+          }
+        },
+        "type": "object",
+        "required": [
+          "entity",
+          "ids",
+          "format"
+        ],
+        "title": "BatchIn"
+      },
+      "Body_backup_api_maintenance_backups_post": {
+        "properties": {
+          "password": {
+            "type": "string",
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "password"
+        ],
+        "title": "Body_backup_api_maintenance_backups_post"
+      },
       "Body_check_capture_api_capture_check_post": {
         "properties": {
           "photo": {
@@ -3946,6 +4395,54 @@
         "type": "object",
         "title": "Body_enqueue_api_jobs_post"
       },
+      "Body_pdf_info_api_pdf_inspect_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          },
+          "password": {
+            "type": "string",
+            "title": "Password",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_pdf_info_api_pdf_inspect_post"
+      },
+      "Body_pdf_pages_api_pdf_render_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          },
+          "selections": {
+            "type": "string",
+            "title": "Selections"
+          },
+          "password": {
+            "type": "string",
+            "title": "Password",
+            "default": ""
+          },
+          "preview": {
+            "type": "boolean",
+            "title": "Preview",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "file",
+          "selections"
+        ],
+        "title": "Body_pdf_pages_api_pdf_render_post"
+      },
       "Body_public_upload_api_public_scan__token__post": {
         "properties": {
           "front": {
@@ -3975,6 +4472,30 @@
         },
         "type": "object",
         "title": "Body_public_upload_api_public_scan__token__post"
+      },
+      "Body_restore_api_maintenance_backups_restore_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          },
+          "password": {
+            "type": "string",
+            "title": "Password"
+          },
+          "confirmation": {
+            "type": "string",
+            "title": "Confirmation"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file",
+          "password",
+          "confirmation"
+        ],
+        "title": "Body_restore_api_maintenance_backups_restore_post"
       },
       "Body_upload_document_api_documents_post": {
         "properties": {
@@ -4051,6 +4572,25 @@
           "pages"
         ],
         "title": "Body_upload_record_api_records_post"
+      },
+      "Body_verify_api_maintenance_backups_verify_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          },
+          "password": {
+            "type": "string",
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file",
+          "password"
+        ],
+        "title": "Body_verify_api_maintenance_backups_verify_post"
       },
       "CardOut": {
         "properties": {

@@ -19,10 +19,11 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { api } from "@/lib/api/endpoints";
 import { initials } from "@/lib/format";
 import { useWorkflowText } from "@/lib/workflow-text";
+import { useWords } from "@/lib/maintenance-text";
 import { useT } from "@/lib/i18n";
 import { useSession } from "@/lib/session";
 import { useStoredValue } from "@/lib/storage";
@@ -80,6 +81,8 @@ function VerificationBanner() {
 export function AppShell({ children }: { children: ReactNode }) {
   const t = useT();
   const w = useWorkflowText();
+  const words = useWords();
+  const sidebar = useRef<HTMLElement>(null);
   const { user, can, logout } = useSession();
   const instance = useInstance();
   const pathname = usePathname();
@@ -90,9 +93,20 @@ export function AppShell({ children }: { children: ReactNode }) {
   const setDrawerOpen = (open: boolean) => setDrawerPath(open ? pathname : null);
   useEffect(() => {
     if (!drawerOpen) return;
-    const onKey = (event: KeyboardEvent) => event.key === "Escape" && setDrawerPath(null);
+    const previous = document.activeElement as HTMLElement | null;
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    sidebar.current?.querySelector<HTMLElement>("a, button")?.focus();
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setDrawerPath(null);
+      if (event.key !== "Tab") return;
+      const targets = Array.from(sidebar.current?.querySelectorAll<HTMLElement>("a, button:not([disabled])") ?? []).filter((element) => element.getClientRects().length > 0);
+      const first = targets[0], last = targets[targets.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+      if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+    };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    return () => { window.removeEventListener("keydown", onKey); document.body.style.overflow = overflow; previous?.focus(); };
   }, [drawerOpen]);
 
   const toggleCollapsed = () => setCollapsedFlag(collapsed ? "0" : "1");
@@ -105,11 +119,14 @@ export function AppShell({ children }: { children: ReactNode }) {
     { href: "/novo", label: t.nav.newDocument, icon: FilePlus2, permission: "documents.upload" },
   ];
   const reading: NavEntry[] = [
+    { href: "/importar", label: words("Importar PDF", "Import PDF"), icon: FilePlus2, permission: "documents.upload" },
+    { href: "/exportar", label: words("Exportar em lote", "Batch export"), icon: Files, permission: "data.reveal" },
     { href: "/registros", label: t.nav.readings, icon: Library },
     { href: "/leitura", label: t.nav.newReading, icon: ScanText, permission: "documents.upload" },
     { href: "/busca", label: t.nav.search, icon: Search },
   ];
   const secondary: NavEntry[] = [
+    { href: "/manutencao", label: words("Manutenção e backups", "Maintenance and backups"), icon: Settings, permission: "settings.manage" },
     { href: "/auditoria", label: t.nav.audit, icon: ScrollText, permission: "audit.view" },
     { href: "/usuarios", label: t.nav.users, icon: UserCog, permission: "users.manage" },
     { href: "/configuracoes", label: t.nav.settings, icon: Settings, permission: "settings.manage" },
@@ -119,7 +136,8 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className={shellClass}>
-      <aside className={styles.sidebar} aria-label={t.nav.main}>
+      <a className="skip-link" href="#conteudo">{words("Ir para o conteúdo", "Skip to content")}</a>
+      <aside ref={sidebar} className={styles.sidebar} aria-label={t.nav.main}>
         <div className={styles.head}>
           <Link href="/pessoas" aria-label={t.nav.home(instance.name)}>
             <Brand className={styles.brand} nameClassName={styles.brandName} />
@@ -173,7 +191,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </aside>
       <div className={styles.backdrop} onClick={() => setDrawerOpen(false)} aria-hidden="true" />
-      <div className={styles.main}>
+      <div className={styles.main} inert={drawerOpen || undefined}>
         <header className={styles.mobileHeader}>
           <button className="icon-button" type="button" onClick={() => setDrawerOpen(true)} aria-label={t.nav.open} aria-expanded={drawerOpen}>
             <Menu size={20} />
@@ -187,7 +205,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           )}
         </header>
         <VerificationBanner />
-        {children}
+        <main id="conteudo" tabIndex={-1}>{children}</main>
       </div>
     </div>
   );

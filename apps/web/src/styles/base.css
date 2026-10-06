@@ -25,6 +25,8 @@ h1, h2, h3 { overflow-wrap: anywhere; }
 .muted { color: var(--color-text-3); }
 .flush { margin: 0; }
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.skip-link { position: fixed; top: .5rem; left: .5rem; z-index: 9999; padding: .75rem 1rem; background: var(--color-surface); color: var(--color-text); border: 2px solid var(--color-focus); border-radius: .5rem; transform: translateY(-200%); }
+.skip-link:focus { transform: translateY(0); }
 .stack { display: flex; flex-direction: column; gap: var(--space-4); min-width: 0; }
 .actions-row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--space-2); }
 .grow { flex: 1 1 220px; min-width: 0; }
@@ -45,7 +47,7 @@ h1, h2, h3 { overflow-wrap: anywhere; }
 .button-secondary:hover { background: var(--color-surface-hover); }
 .button-ghost { background: transparent; color: var(--color-text-2); }
 .button-ghost:hover { background: var(--color-surface-hover); color: var(--color-text); }
-.button-danger { background: var(--color-danger); color: #ffffff; }
+.button-danger { background: var(--color-danger); color: var(--color-danger-text); }
 .button-danger:hover { background: var(--color-danger-hover); }
 .button-danger-ghost { background: transparent; color: var(--color-danger); }
 .button-danger-ghost:hover { background: var(--color-danger-subtle); }

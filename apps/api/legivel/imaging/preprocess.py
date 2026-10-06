@@ -115,6 +115,30 @@ def enhance_contrast(image_bgr: np.ndarray) -> np.ndarray:
     return cv2.cvtColor(cv2.merge((lightness, channel_a, channel_b)), cv2.COLOR_LAB2BGR)
 
 
+def deskew(image_bgr: np.ndarray) -> np.ndarray:
+    """Correct small text-line angles; leave uncertain and blank images alone."""
+    gray = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2GRAY)
+    edges = cv2.Canny(gray, 50, 150)
+    lines = cv2.HoughLinesP(edges, 1, np.pi / 180, threshold=80, minLineLength=max(80, image_bgr.shape[1] // 5), maxLineGap=20)
+    if lines is None:
+        return image_bgr
+    angles = []
+    for x1, y1, x2, y2 in lines[:, 0]:
+        angle = float(np.degrees(np.arctan2(y2 - y1, x2 - x1)))
+        if abs(angle) <= 12:
+            angles.append(angle)
+    if len(angles) < 5 or np.std(angles) > 2:
+        return image_bgr
+    angle = float(np.median(angles))
+    if abs(angle) < 0.4:
+        return image_bgr
+    height, width = image_bgr.shape[:2]
+    matrix = cv2.getRotationMatrix2D((width / 2, height / 2), angle, 1)
+    return cv2.warpAffine(
+        image_bgr, matrix, (width, height), flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_CONSTANT, borderValue=(255, 255, 255)
+    )
+
+
 def encode(image_bgr: np.ndarray, extension: str, quality: int) -> bytes:
     flag = cv2.IMWRITE_WEBP_QUALITY if extension == ".webp" else cv2.IMWRITE_JPEG_QUALITY
     success, buffer = cv2.imencode(extension, image_bgr, [flag, quality])
@@ -131,7 +155,7 @@ def prepare_image(content: bytes, long_side: int = OCR_LONG_SIDE) -> PreparedIma
     if document.shape[0] > document.shape[1] * 1.15 and corners is not None:
         document = cv2.rotate(document, cv2.ROTATE_90_CLOCKWISE)
     return PreparedImage(
-        ocr_image=enhance_contrast(resize_long_side(document, long_side)),
+        ocr_image=enhance_contrast(deskew(resize_long_side(document, long_side))),
         original_mime=mime,
         width=pil_image.width,
         height=pil_image.height,

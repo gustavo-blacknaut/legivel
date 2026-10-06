@@ -8,6 +8,7 @@ const nextConfig: NextConfig = {
   output: "standalone",
   poweredByHeader: false,
   reactStrictMode: true,
+  experimental: { proxyClientMaxBodySize: "201mb" },
   allowedDevOrigins: ["127.0.0.1"],
   async rewrites() {
     return [

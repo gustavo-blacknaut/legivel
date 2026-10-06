@@ -5,7 +5,7 @@ from sqlalchemy import Text, and_, exists, not_, or_, select, type_coerce
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.orm.attributes import flag_modified
 
-from legivel.db.models import CardDetail, Document, DocumentImage, Person, ProcessingJob, Record, RecordPage
+from legivel.db.models import CardDetail, Document, DocumentImage, Person, ProcessingJob, Record, RecordPage, ReviewRevision
 from legivel.security.crypto import FIELD_PREFIX, FILE_HEADER, KeyRing
 from legivel.security.fields import blind_index
 from legivel.services.settings import LOGO_PATH_KEY, stored_values
@@ -23,6 +23,7 @@ PROTECTED = (
     (RecordPage, RECORD_PAGE_FIELDS),
     (CardDetail, CARD_FIELDS),
     (ProcessingJob, ("payload",)),
+    (ReviewRevision, ("before", "after")),
 )
 BATCH_SIZE = 200
 
@@ -81,6 +82,7 @@ def reencrypt(factory: sessionmaker[Session], store: FileStore, ring: KeyRing | 
         rewrite_rows(session, RecordPage, RECORD_PAGE_FIELDS)
         rewrite_rows(session, CardDetail, CARD_FIELDS)
         rewrite_rows(session, ProcessingJob, ("payload",))
+        rewrite_rows(session, ReviewRevision, ("before", "after"))
         if ring is None:
             return report
         paths = [

@@ -1,5 +1,6 @@
 import logging
 import threading
+from collections.abc import Callable
 from datetime import timedelta
 
 from sqlalchemy import select
@@ -77,13 +78,16 @@ def run_retention(factory: sessionmaker[Session], store: FileStore, settings: Se
     return documents + records
 
 
-def start_retention_worker(factory: sessionmaker[Session], store: FileStore, settings: Settings) -> threading.Event:
+def start_retention_worker(
+    factory: sessionmaker[Session], store: FileStore, settings: Settings, paused: Callable[[], bool] = lambda: False
+) -> threading.Event:
     stop = threading.Event()
 
     def loop() -> None:
         while not stop.is_set():
             try:
-                run_retention(factory, store, settings)
+                if not paused():
+                    run_retention(factory, store, settings)
             except Exception:
                 logger.exception("Falha na exclusão automática")
             stop.wait(settings.retention_interval_hours * 3600)

@@ -315,3 +315,15 @@ class SavedSearch(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
     name: Mapped[str] = mapped_column(String(100))
     path: Mapped[str] = mapped_column(String(2000))
+
+
+class ReviewRevision(Base):
+    __tablename__ = "review_revisions"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    document_id: Mapped[int | None] = mapped_column(ForeignKey("documents.id", ondelete="CASCADE"), index=True)
+    record_id: Mapped[int | None] = mapped_column(ForeignKey("records.id", ondelete="CASCADE"), index=True)
+    user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
+    before: Mapped[dict] = mapped_column(EncryptedJSON)
+    after: Mapped[dict] = mapped_column(EncryptedJSON)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)

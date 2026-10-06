@@ -1,8 +1,8 @@
 {
   "name": "legivel-web",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
-  "description": "Interface web do Legível",
+  "description": "Interface web do LegÃ­vel",
   "license": "MIT",
   "author": "Gustavo C. Raichardt",
   "engines": {
@@ -31,6 +31,7 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
     "@playwright/test": "^1.63.0",
     "@testing-library/dom": "^10.4.2",
     "@testing-library/jest-dom": "^7.0.1",

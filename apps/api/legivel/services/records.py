@@ -90,6 +90,9 @@ def create_record(
 
 
 def update_record(session: Session, record: Record, module: OcrModule, values: dict[str, str], user_id: int | None) -> Record:
+    from legivel.db.models import ReviewRevision
+
+    before = dict(record.data.get("fields", {}))
     editable = {spec.name for spec in module.fields_for(record.kind) if spec.kind not in ("readonly", "masked")}
     fields = dict(record.data.get("fields", {}))
     changed = []
@@ -99,14 +102,16 @@ def update_record(session: Session, record: Record, module: OcrModule, values: d
             changed.append(name)
     record.data = {**record.data, "fields": fields}
     record.issues = module.validate(record.kind, fields)
-    if "title" in changed and fields.get("title"):
-        record.title = fields["title"]
+    if "title" in changed:
+        record.title = fields.get("title") or None
     if record.card and "holder_name" in changed:
         record.card.holder_name = fields["holder_name"]
     if record.card and "expiry" in changed:
         record.card.expiry = fields["expiry"]
     record.status = DocumentStatus.REVIEWED
     record.updated_at = utc_now()
+    if changed:
+        session.add(ReviewRevision(record_id=record.id, user_id=user_id, before=before, after=fields))
     audit(session, user_id, "review", f"record:{record.module}", record.id, ", ".join(changed) or "sem alterações")
     session.commit()
     return record

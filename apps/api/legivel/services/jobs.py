@@ -18,7 +18,7 @@ def discard_files(store, paths):
         try:
             store.delete(path)
         except OSError:
-            logger.warning("Não foi possível limpar arquivo temporário")
+            logger.warning("NÃ£o foi possÃ­vel limpar arquivo temporÃ¡rio")
 
 
 class Cancelled(Exception):
@@ -43,25 +43,28 @@ class TrackedStore:
 
 
 def process_next(application) -> bool:
-    factory = application.state.session_factory
-    store = application.state.store
-    with factory() as session:
-        job_id = session.scalar(
-            select(ProcessingJob.id).where(ProcessingJob.status == "queued").order_by(ProcessingJob.id).limit(1)
-        )
-        if job_id is None:
+    with application.state.maintenance_lock:
+        if getattr(application.state, "restore_pending", False):
             return False
-        claimed = session.execute(
-            update(ProcessingJob)
-            .where(ProcessingJob.id == job_id, ProcessingJob.status == "queued")
-            .values(status="running", error=None, completed_pages=0)
-        )
-        session.commit()
-        if not claimed.rowcount:
-            return True
-        job = session.get(ProcessingJob, job_id)
-        payload = job.payload
-        user_id, module = job.user_id, job.module
+        factory = application.state.session_factory
+        store = application.state.store
+        with factory() as session:
+            job_id = session.scalar(
+                select(ProcessingJob.id).where(ProcessingJob.status == "queued").order_by(ProcessingJob.id).limit(1)
+            )
+            if job_id is None:
+                return False
+            claimed = session.execute(
+                update(ProcessingJob)
+                .where(ProcessingJob.id == job_id, ProcessingJob.status == "queued")
+                .values(status="running", error=None, completed_pages=0)
+            )
+            session.commit()
+            if not claimed.rowcount:
+                return True
+            job = session.get(ProcessingJob, job_id)
+            payload = job.payload
+            user_id, module = job.user_id, job.module
     tracked = TrackedStore(store)
     completed = 0
     replaced_paths = []
@@ -133,7 +136,7 @@ def process_next(application) -> bool:
                     ]
                     from legivel.services.audit import record as audit
 
-                    audit(session, user_id, "delete", "document", previous.id, "substituído por nova leitura")
+                    audit(session, user_id, "delete", "document", previous.id, "substituÃ­do por nova leitura")
                     session.delete(previous)
             # Result and completion are committed together; recovery cannot create a second result.
             changed = session.execute(

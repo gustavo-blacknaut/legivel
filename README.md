@@ -11,7 +11,13 @@ OCR local para documentos e papéis do dia a dia. Lê RG, CNH, CPF, passaporte, 
 | <img src="docs/screenshots/1280/registro.png" alt="Página de livro lida em duas colunas, com texto e exportação" width="520"> | <img src="docs/screenshots/375/leitura.png" alt="Escolha do módulo de leitura no celular" width="220"> |
 | <img src="docs/screenshots/1280/revisao.png" alt="Revisão de um documento com confiança por campo" width="520"> | <img src="docs/screenshots/375/cartao.png" alt="Cartão lido com número mascarado" width="220"> |
 
-Todas as telas em 360, 375, 768, 1024, 1280 e 1920 px estão em [docs/screenshots](docs/screenshots). Os documentos que aparecem são fictícios, gerados por `apps/api/tests/synthetic.py`.
+As capturas de referência em 360, 375, 768, 1024, 1280 e 1920 px estão em [docs/screenshots](docs/screenshots). Os documentos que aparecem são fictícios, gerados por `apps/api/tests/synthetic.py`.
+
+## Novidades da versão 0.3.0
+
+Backup e teste de recuperação pelo painel, histórico criptografado de revisão com desfazer, importação de PDFs com seleção e rotação de páginas, correção de inclinação antes do OCR, exportação em CSV/Excel/ZIP, melhorias de acessibilidade e painel de manutenção com limpeza de temporários.
+
+Veja os limites e as instruções de atualização e recuperação em [Novidades da versão 0.3.0](docs/novidades-0.3.md).
 
 ## Novidades da versão 0.2.0
 

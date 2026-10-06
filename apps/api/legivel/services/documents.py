@@ -393,6 +393,9 @@ def reprocess_document(
 
 
 def review_document(session: Session, document: Document, values: dict[str, str], user_id: int | None = None) -> Document:
+    from legivel.db.models import ReviewRevision
+
+    before = document_values(document)
     parser = get_parser(document.doc_type)
     extracted = (document.extra_fields or {}).get("extracted", {})
     apply_values(document, {name: values.get(name, "") for name in parser.field_names if name in values})
@@ -404,6 +407,8 @@ def review_document(session: Session, document: Document, values: dict[str, str]
     document.status = DocumentStatus.REVIEWED
     document.reviewed_at = utc_now()
     document.person = upsert_person(session, document)
+    if before != current:
+        session.add(ReviewRevision(document_id=document.id, user_id=user_id, before=before, after=current))
     session.add(AuditLog(user_id=user_id, action="review", entity="document", entity_id=document.id))
     session.commit()
     return document

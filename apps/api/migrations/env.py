@@ -25,10 +25,13 @@ def run_migrations_online() -> None:
             context.run_migrations()
         return
     engine = build_engine(resolve_database_url())
-    with engine.connect() as new_connection:
-        context.configure(connection=new_connection, target_metadata=target_metadata, render_as_batch=True)
-        with context.begin_transaction():
-            context.run_migrations()
+    try:
+        with engine.connect() as new_connection:
+            context.configure(connection=new_connection, target_metadata=target_metadata, render_as_batch=True)
+            with context.begin_transaction():
+                context.run_migrations()
+    finally:
+        engine.dispose()
 
 
 if context.is_offline_mode():
