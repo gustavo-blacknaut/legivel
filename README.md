@@ -13,6 +13,12 @@ OCR local para documentos e papéis do dia a dia. Lê RG, CNH, CPF, passaporte, 
 
 As capturas de referência em 360, 375, 768, 1024, 1280 e 1920 px estão em [docs/screenshots](docs/screenshots). Os documentos que aparecem são fictícios, gerados por `apps/api/tests/synthetic.py`.
 
+## Novidades da versão 0.4.0
+
+Comparação entre original e imagem tratada, revisão em lote, modelos com campos configuráveis, painel de vencimentos e controles de câmera quando disponíveis. A suíte de compatibilidade inclui Chromium móvel e WebKit móvel.
+
+Veja o funcionamento em [Novidades da versão 0.4.0](docs/novidades-0.4.md) e o [roteiro para celulares reais](docs/testes-celulares.md). A validação com sensores físicos permanece pendente até a execução em aparelhos.
+
 ## Novidades da versão 0.3.0
 
 Backup e teste de recuperação pelo painel, histórico criptografado de revisão com desfazer, importação de PDFs com seleção e rotação de páginas, correção de inclinação antes do OCR, exportação em CSV/Excel/ZIP, melhorias de acessibilidade e painel de manutenção com limpeza de temporários.

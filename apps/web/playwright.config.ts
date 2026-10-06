@@ -22,7 +22,9 @@ export default defineConfig({
   },
   projects: [
     { name: "setup", testMatch: /auth\.setup\.ts/ },
-    { name: "flows", testMatch: /(flows|workflow|capture|maintenance)\.spec\.ts/, dependencies: ["setup"], use: { ...devices["Desktop Chrome"] } },
+    { name: "flows", testMatch: /(flows|workflow|capture|maintenance|productivity)\.spec\.ts/, dependencies: ["setup"], use: { ...devices["Desktop Chrome"] } },
+    { name: "mobile-chrome", testMatch: /mobile\.spec\.ts/, dependencies: ["setup"], use: { ...devices["Pixel 7"] } },
+    { name: "mobile-safari", testMatch: /mobile\.spec\.ts/, dependencies: ["setup"], use: { ...devices["iPhone 13"] } },
     { name: "responsive", testMatch: /responsive\.spec\.ts/, dependencies: ["setup"], use: { ...devices["Desktop Chrome"] } },
     { name: "screenshots", testMatch: /screenshots\.spec\.ts/, dependencies: ["setup"], use: { ...devices["Desktop Chrome"] } },
   ],

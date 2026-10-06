@@ -5,6 +5,7 @@
   animation: rise-in 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .wide { max-width: 560px; }
+.large { max-width: 1040px; }
 .handle { display: none; }
 .body { padding: var(--space-6) var(--space-6) var(--space-4); }
 .icon { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; background: var(--color-danger-subtle); color: var(--color-danger); margin-bottom: var(--space-4); }
@@ -18,7 +19,7 @@
 
 @media (max-width: 720px) {
   .backdrop { place-items: end center; padding: 0; }
-  .dialog, .wide {
+  .dialog, .wide, .large {
     max-width: none; max-height: 92dvh;
     border-radius: 12px 12px 0 0;
     animation: sheet-in 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);

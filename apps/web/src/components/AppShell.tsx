@@ -18,12 +18,14 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { api } from "@/lib/api/endpoints";
 import { initials } from "@/lib/format";
 import { useWorkflowText } from "@/lib/workflow-text";
 import { useWords } from "@/lib/maintenance-text";
+import { workflowJson } from "@/lib/workflow";
 import { useT } from "@/lib/i18n";
 import { useSession } from "@/lib/session";
 import { useStoredValue } from "@/lib/storage";
@@ -84,6 +86,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const words = useWords();
   const sidebar = useRef<HTMLElement>(null);
   const { user, can, logout } = useSession();
+  const expirations = useQuery({ queryKey: ["expirations"], queryFn: () => workflowJson<{ total: number }>("/api/expirations"), refetchInterval: 60_000, staleTime: 30_000, enabled: can("documents.view") });
   const instance = useInstance();
   const pathname = usePathname();
   const [collapsedFlag, setCollapsedFlag] = useStoredValue(COLLAPSED_KEY, "0", isFlag);
@@ -112,6 +115,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   const toggleCollapsed = () => setCollapsedFlag(collapsed ? "0" : "1");
 
   const primary: NavEntry[] = [
+    { href: "/revisar", label: words("Revisão em lote", "Batch review"), icon: Files, permission: "documents.review" },
+    { href: "/vencimentos", label: `${words("Vencimentos", "Expiry alerts")}${expirations.data?.total ? ` (${expirations.data.total})` : ""}`, icon: ScrollText },
     { href: "/fila", label: w.queue, icon: ScanText, permission: "documents.upload" },
     { href: "/organizar", label: w.organize, icon: Library },
     { href: "/pessoas", label: t.nav.people, icon: Users },
@@ -119,6 +124,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     { href: "/novo", label: t.nav.newDocument, icon: FilePlus2, permission: "documents.upload" },
   ];
   const reading: NavEntry[] = [
+    { href: "/modelos", label: words("Modelos de documentos", "Document templates"), icon: Library },
     { href: "/importar", label: words("Importar PDF", "Import PDF"), icon: FilePlus2, permission: "documents.upload" },
     { href: "/exportar", label: words("Exportar em lote", "Batch export"), icon: Files, permission: "data.reveal" },
     { href: "/registros", label: t.nav.readings, icon: Library },

@@ -12,6 +12,7 @@ type DialogProps = {
   icon?: ReactNode;
   role?: "dialog" | "alertdialog";
   wide?: boolean;
+  large?: boolean;
   busy?: boolean;
   initialFocus?: string;
   onClose: () => void;
@@ -19,7 +20,7 @@ type DialogProps = {
   actions: ReactNode;
 };
 
-export function Dialog({ open, title, icon, role = "dialog", wide, busy, initialFocus, onClose, children, actions }: DialogProps) {
+export function Dialog({ open, title, icon, role = "dialog", wide, large, busy, initialFocus, onClose, children, actions }: DialogProps) {
   const ref = useRef<HTMLDivElement>(null);
   const titleId = useId();
 
@@ -62,7 +63,7 @@ export function Dialog({ open, title, icon, role = "dialog", wide, busy, initial
     <div className={styles.backdrop} onMouseDown={(event) => event.target === event.currentTarget && !busy && onClose()}>
       <div
         ref={ref}
-        className={`${styles.dialog} ${wide ? styles.wide : ""}`}
+        className={`${styles.dialog} ${wide ? styles.wide : ""} ${large ? styles.large : ""}`}
         role={role}
         aria-modal="true"
         aria-labelledby={titleId}

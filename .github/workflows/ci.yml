@@ -113,9 +113,9 @@ jobs:
         working-directory: apps/api
       - run: npm ci --no-audit --no-fund
         working-directory: apps/web
-      - run: npx playwright install --with-deps chromium
+      - run: npx playwright install --with-deps chromium webkit
         working-directory: apps/web
-      - run: npx playwright test --project=setup --project=flows --project=responsive
+      - run: npx playwright test --project=setup --project=flows --project=responsive --project=mobile-chrome --project=mobile-safari
         working-directory: apps/web
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: failure()

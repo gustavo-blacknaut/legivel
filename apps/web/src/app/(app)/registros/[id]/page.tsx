@@ -6,6 +6,10 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useMemo, useState, type FormEvent } from "react";
 import { ReviewHistory } from "@/components/ReviewHistory";
+import { ImageComparison } from "@/components/ImageComparison";
+import { BatchReviewBar } from "@/components/BatchReviewBar";
+import { TemplatePicker } from "@/components/TemplatePicker";
+import { useBatchReview } from "@/lib/batch-review";
 import { OrganizationEditor } from "@/components/Organization";
 import { RedactionExport } from "@/components/RedactionExport";
 import { DeleteDialog } from "@/components/DeleteDialog";
@@ -43,6 +47,7 @@ export default function RecordPage() {
   const { t, format } = useLocale();
   const { can } = useSession();
   const recordId = Number(useParams<{ id: string }>().id);
+  const batch = useBatchReview("record", recordId);
   const router = useRouter();
   const toast = useToast();
   const queryClient = useQueryClient();
@@ -86,8 +91,8 @@ export default function RecordPage() {
 
   const title = record.title || t.records.untitled;
 
-  const save = async (event: FormEvent) => {
-    event.preventDefault();
+  const save = async (event?: FormEvent, advance = false) => {
+    event?.preventDefault();
     setSaving(true);
     try {
       const next = await api.saveRecord(record.id, Object.fromEntries(changed.map((field) => [field.name, values[field.name] ?? ""])));
@@ -95,6 +100,8 @@ export default function RecordPage() {
       setValues(valuesOf(next));
       void queryClient.invalidateQueries({ queryKey: ["records"] });
       toast(t.record.saved);
+      void queryClient.invalidateQueries({ queryKey: ["expirations"] });
+      if (advance) batch.navigate(1, true);
     } catch (caught) {
       toast(caught instanceof Error ? caught.message : t.common.error, "error");
     } finally {
@@ -140,6 +147,8 @@ export default function RecordPage() {
       />
 
       {!editable && <div className="alert alert-warning">{t.record.readOnly}</div>}
+      <BatchReviewBar batch={batch} dirty={changed.length > 0} busy={saving} onSave={() => void save(undefined, true)} />
+      <ImageComparison pages={record.pages.map((item) => ({ label: t.reading.pageLabel(item.number), original: item.original_url, processed: item.full_url }))} />
       {record.issues.length > 0 && (
         <div className="alert alert-warning">
           <CircleAlert size={16} />
@@ -165,6 +174,7 @@ export default function RecordPage() {
         )}
 
         <div className="stack">
+          <TemplatePicker id={recordId} module={record.module} template={record.template} dirty={changed.length > 0} />
           <form className="panel" onSubmit={save}>
             <div className="panel-head">
               <h2>{t.record.fields}</h2>
@@ -284,9 +294,10 @@ function RecordInput({ field, value, onChange }: RecordInputProps) {
         )}
         {value && !untouched && <span className={styles.confidence}>{t.review.edited}</span>}
       </label>
-      <input
+      {field.kind === "textarea" ? <textarea id={inputId} value={value} maxLength={500} rows={4} onChange={(event) => onChange(field.name, event.target.value)} aria-invalid={field.issues.length > 0 || undefined} /> : <input
         id={inputId}
         value={value}
+        type={field.kind === "date" && field.name.startsWith("custom_") ? "date" : "text"}
         maxLength={500}
         readOnly={locked}
         onChange={(event) => onChange(field.name, event.target.value)}
@@ -294,7 +305,7 @@ function RecordInput({ field, value, onChange }: RecordInputProps) {
         placeholder={field.kind === "date" ? "dd/mm/aaaa" : undefined}
         className={locked ? "mono" : undefined}
         aria-invalid={field.issues.length > 0 || undefined}
-      />
+      />}
       {field.issues.map((issue) => (
         <span key={issue} className="field-error">
           {issue}

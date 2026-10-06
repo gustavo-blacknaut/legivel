@@ -25,6 +25,7 @@ from legivel.storage.file_store import FileStore
 from legivel.web.limits import BodySizeLimit
 from legivel.web.maintenance_routes import router as maintenance_router
 from legivel.web.modules_routes import router as records_router
+from legivel.web.product_routes import router as product_router
 from legivel.web.routes import public_router, router
 from legivel.web.workflow_routes import router as workflow_router
 
@@ -62,7 +63,17 @@ def warm_up_ocr(application: FastAPI) -> None:
         logging.getLogger("legivel.ocr").exception("Falha ao preparar o motor de OCR")
 
 
-ROUTERS = (setup_router, auth_router, users_router, router, records_router, public_router, workflow_router, maintenance_router)
+ROUTERS = (
+    setup_router,
+    auth_router,
+    users_router,
+    router,
+    records_router,
+    public_router,
+    workflow_router,
+    maintenance_router,
+    product_router,
+)
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:

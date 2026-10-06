@@ -67,6 +67,39 @@ test.describe("captura e duplicidade", () => {
     await expect(page.getByRole("button", { name: "Remover", exact: true })).toBeVisible();
   });
 
+  test("troca de câmera encerra o vídeo anterior e aplica luz e zoom somente quando disponíveis", async ({ page }) => {
+    await page.addInitScript(() => {
+      const state = window as unknown as Window & { testStreams: MediaStream[]; testConstraints: MediaTrackConstraints[] };
+      state.testStreams = []; state.testConstraints = [];
+      Object.defineProperty(navigator.mediaDevices, "enumerateDevices", { configurable: true, value: async () => [{ deviceId: "rear", kind: "videoinput", label: "Traseira" }, { deviceId: "front", kind: "videoinput", label: "Frontal" }] });
+      Object.defineProperty(navigator.mediaDevices, "getUserMedia", { configurable: true, value: async () => {
+        const canvas = document.createElement("canvas"); canvas.width = 1280; canvas.height = 720;
+        canvas.getContext("2d")!.fillRect(0, 0, 1280, 720);
+        const media = canvas.captureStream(10);
+        const track = media.getVideoTracks()[0]!;
+        Object.defineProperty(track, "getCapabilities", { value: () => ({ torch: true, zoom: { min: 1, max: 3, step: .1 } }) });
+        Object.defineProperty(track, "applyConstraints", { value: async (values: MediaTrackConstraints) => { state.testConstraints.push(values); } });
+        state.testStreams.push(media); return media;
+      } });
+    });
+    await page.goto("/novo");
+    await page.getByRole("button", { name: "Câmera guiada", exact: true }).first().click();
+    const dialog = page.getByRole("dialog", { name: "Câmera guiada" });
+    await expect(dialog.getByRole("button", { name: "Capturar", exact: true })).toBeEnabled();
+    await dialog.getByRole("button", { name: "Luz da câmera" }).click();
+    await expect(dialog.getByRole("button", { name: "Luz da câmera" })).toHaveAttribute("aria-pressed", "true");
+    await dialog.getByLabel("Zoom da câmera", { exact: true }).focus();
+    await page.keyboard.press("ArrowRight");
+    await expect.poll(() => page.evaluate(() => (window as unknown as { testConstraints: unknown[] }).testConstraints.length)).toBe(2);
+    await dialog.getByRole("combobox", { name: /^Câmera/ }).selectOption("front");
+    await expect.poll(() => page.evaluate(() => (window as unknown as { testStreams: MediaStream[] }).testStreams[0]!.getTracks()[0]!.readyState)).toBe("ended");
+    await expect(dialog.getByRole("button", { name: "Capturar", exact: true })).toBeEnabled();
+    await dialog.getByRole("button", { name: "Cancelar", exact: true }).focus();
+    await page.keyboard.press("Escape");
+    await expect(dialog).toBeHidden();
+    await expect.poll(() => page.evaluate(() => (window as unknown as { testStreams: MediaStream[] }).testStreams.every((media) => media.getTracks().every((track) => track.readyState === "ended")))).toBe(true);
+  });
+
   test("documento duplicado permite abrir existente e manter uma cópia", async ({ page }) => {
     await page.goto("/novo");
     const file = { name: "duplicado.jpg", mimeType: "image/jpeg", buffer: Buffer.concat([readFileSync(SAMPLE), Buffer.from("e2e-duplicate-only")]) };

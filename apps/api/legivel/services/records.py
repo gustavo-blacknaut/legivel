@@ -9,6 +9,7 @@ from legivel.imaging.preprocess import encode_processed, encode_thumbnail
 from legivel.modules.base import ModuleOutput, OcrModule, ProcessingContext
 from legivel.security.masking import mask_number
 from legivel.services.audit import record as audit
+from legivel.services.templates import record_fields, template_issues
 from legivel.storage.file_store import FileStore
 
 SEARCH_NUMBER = re.compile(r"\d[\d .\-/]{2,}\d")
@@ -93,7 +94,7 @@ def update_record(session: Session, record: Record, module: OcrModule, values: d
     from legivel.db.models import ReviewRevision
 
     before = dict(record.data.get("fields", {}))
-    editable = {spec.name for spec in module.fields_for(record.kind) if spec.kind not in ("readonly", "masked")}
+    editable = {spec.name for spec in record_fields(record, module) if spec.kind not in ("readonly", "masked")}
     fields = dict(record.data.get("fields", {}))
     changed = []
     for name, value in values.items():
@@ -101,7 +102,7 @@ def update_record(session: Session, record: Record, module: OcrModule, values: d
             fields[name] = (value or "").strip()
             changed.append(name)
     record.data = {**record.data, "fields": fields}
-    record.issues = module.validate(record.kind, fields)
+    record.issues = module.validate(record.kind, fields) + template_issues(record, fields)
     if "title" in changed:
         record.title = fields.get("title") or None
     if record.card and "holder_name" in changed:

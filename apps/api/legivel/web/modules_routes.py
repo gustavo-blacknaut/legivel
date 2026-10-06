@@ -21,6 +21,7 @@ from legivel.services.exports import to_markdown, to_searchable_pdf, to_txt
 from legivel.services.queries import MAX_PAGE_SIZE, ListFilters, end_of, list_documents, start_of
 from legivel.services.records import CardPolicy, create_record, delete_record, update_record
 from legivel.services.settings import RuntimeSettings
+from legivel.services.templates import record_fields
 from legivel.storage.file_store import FileStore
 from legivel.web.deps import RuntimeDep, SessionDep, get_store, pack_engines, permitted
 from legivel.web.routes import read_image
@@ -82,6 +83,7 @@ class RecordPageOut(BaseModel):
     number: int
     thumbnail_url: str | None
     full_url: str | None
+    original_url: str | None
     text: str
     columns: int | None
 
@@ -103,6 +105,7 @@ class RecordDetail(RecordSummary):
     pages: list[RecordPageOut]
     exports: list[str]
     card: CardOut | None
+    template: dict | None = None
 
 
 class RecordReviewIn(BaseModel):
@@ -176,7 +179,7 @@ def record_detail(record: Record) -> RecordDetail:
             confidence=(record.field_confidence or {}).get(spec.name),
             issues=issues_by_field.get(spec.name, []),
         )
-        for spec in module.fields_for(record.kind)
+        for spec in record_fields(record, module)
     ]
     pages = []
     for page in record.pages:
@@ -187,6 +190,7 @@ def record_detail(record: Record) -> RecordDetail:
                 number=page.page_number,
                 thumbnail_url=thumbnail,
                 full_url=full,
+                original_url=f"/api/record-pages/{page.id}/original" if page.original_path else None,
                 text=page.text or "",
                 columns=(page.layout or {}).get("columns"),
             )
@@ -210,6 +214,7 @@ def record_detail(record: Record) -> RecordDetail:
         pages=pages,
         exports=list(module.exports),
         card=card,
+        template=record.data.get("template"),
     )
 
 

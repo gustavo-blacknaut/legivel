@@ -7,6 +7,9 @@ import { useParams, useRouter } from "next/navigation";
 import { useMemo, useState, type FormEvent } from "react";
 import { FieldCrop, type FieldRegion } from "@/components/FieldCrop";
 import { ReviewHistory } from "@/components/ReviewHistory";
+import { ImageComparison } from "@/components/ImageComparison";
+import { BatchReviewBar } from "@/components/BatchReviewBar";
+import { useBatchReview } from "@/lib/batch-review";
 import { OrganizationEditor } from "@/components/Organization";
 import { RedactionExport } from "@/components/RedactionExport";
 import { useWorkflowText } from "@/lib/workflow-text";
@@ -35,6 +38,7 @@ export default function DocumentPage() {
   const [activeField, setActiveField] = useState<string | null>(null);
   const { can } = useSession();
   const documentId = Number(useParams<{ id: string }>().id);
+  const batch = useBatchReview("document", documentId);
   const router = useRouter();
   const toast = useToast();
   const queryClient = useQueryClient();
@@ -85,13 +89,15 @@ export default function DocumentPage() {
     void queryClient.invalidateQueries({ queryKey: ["people"] });
   };
 
-  const save = async (event: FormEvent) => {
-    event.preventDefault();
+  const save = async (event?: FormEvent, advance = false) => {
+    event?.preventDefault();
     setSaving(true);
     try {
       const changed = Object.fromEntries(document.fields.filter((field) => (values[field.name] ?? "") !== field.value).map((field) => [field.name, values[field.name] ?? ""]));
       apply(await api.saveDocument(document.id, changed, reveal));
       toast(t.review.saved);
+      void queryClient.invalidateQueries({ queryKey: ["expirations"] });
+      if (advance) batch.navigate(1, true);
     } catch (caught) {
       toast(caught instanceof Error ? caught.message : t.common.error, "error");
     } finally {
@@ -176,6 +182,9 @@ export default function DocumentPage() {
           </button>
         </div>
       )}
+
+      <BatchReviewBar batch={batch} dirty={dirty} busy={saving || reprocessing} onSave={() => void save(undefined, true)} />
+      <ImageComparison pages={document.pages.map((image) => ({ label: t.review.sides[image.side] ?? image.side, original: image.original_url, processed: image.full_url }))} />
 
       <div className={styles.review}>
         <aside className={styles.images} aria-label={t.review.images}>
