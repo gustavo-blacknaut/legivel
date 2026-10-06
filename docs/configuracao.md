@@ -49,6 +49,9 @@ Para desenvolvimento, `docker compose --profile dev up -d mailpit` sobe o [Mailp
 | `LEGIVEL_OCR_MODEL_DIR` | `./models` | não | não | Onde ficam os modelos ONNX (`python -m legivel.cli download-models`). |
 | `LEGIVEL_OCR_WARMUP` | `true` | não | não | Prepara o motor ao subir, para a primeira leitura não esperar. |
 | `LEGIVEL_OCR_PASSES` | `3` | não | sim | Quantas vezes a imagem é lida, cada vez com um efeito (contraste e nitidez, preto e branco, escurecimento). As leituras extras só rodam se algum campo vier vazio, inválido ou com confiança abaixo de 90%; cada campo fica com o valor de maior confiança, e o CPF só é trocado por um que passe no dígito verificador. |
+| `LEGIVEL_READING_LANGUAGES` | `pt,en,es` | não | sim | Idiomas que os módulos de livros, digitalização, finanças e cartões tentam reconhecer. Cada alfabeto (latino, cirílico, chinês, japonês, coreano, árabe, devanágari) usa um modelo próprio, carregado na primeira leitura. |
+| `LEGIVEL_DEFAULT_READING_LANGUAGE` | `auto` | não | sim | Idioma usado quando o envio não escolhe um. Em `auto`, o idioma é detectado pelo texto lido. |
+| `LEGIVEL_STORE_CARD_NUMBERS` | `false` | não | sim | Guarda o número completo do cartão, sempre cifrado. Só pode ser ligado com a criptografia ativada; o CVV nunca é guardado. |
 
 ## Envio, imagens e retenção
 

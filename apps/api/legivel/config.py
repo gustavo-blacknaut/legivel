@@ -51,6 +51,9 @@ class Settings(OcrSettings):
 
     ocr_warmup: bool = True
     ocr_passes: int = Field(3, ge=1, le=4)
+    reading_languages: str = "pt,en,es"
+    default_reading_language: str = "auto"
+    store_card_numbers: bool = False
     background_jobs: bool = True
 
     upload_max_mb: int = Field(15, ge=1, le=100)

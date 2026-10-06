@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from legivel.auth.permissions import ROLE_DEFAULTS, editable_roles, normalize_permissions
 from legivel.config import INTERFACE_LANGUAGES, THEMES, UPLOAD_FORMATS, Settings
 from legivel.db.models import AppSetting
+from legivel.ocr.languages import AUTO, LANGUAGES
 
 ROLE_PERMISSIONS_KEY = "role_permissions"
 LOGO_PATH_KEY = "logo_path"
@@ -37,6 +38,9 @@ OPTIONS = (
     Option("timezone", "timezone"),
     Option("ocr_device", "choice", choices=OCR_DEVICES),
     Option("ocr_passes", "int", 1, 4),
+    Option("reading_languages", "languages"),
+    Option("default_reading_language", "choice", choices=(AUTO, *LANGUAGES)),
+    Option("store_card_numbers", "bool"),
     Option("upload_max_mb", "int", 1, 100),
     Option("upload_formats", "formats"),
     Option("image_quality", "int", 40, 100),
@@ -94,6 +98,11 @@ def convert(option: Option, value: Any) -> Any:
         if not formats or set(formats) - set(UPLOAD_FORMATS):
             raise SettingError(f"upload_formats: escolha entre {', '.join(UPLOAD_FORMATS)}")
         return ",".join(dict.fromkeys(formats))
+    if option.kind == "languages":
+        codes = [item.strip().lower() for item in text.split(",") if item.strip()]
+        if not codes or set(codes) - set(LANGUAGES):
+            raise SettingError(f"reading_languages: escolha entre {', '.join(LANGUAGES)}")
+        return ",".join(dict.fromkeys(codes))
     raise SettingError(f"Configuração desconhecida: {option.key}")
 
 
@@ -115,6 +124,10 @@ class RuntimeSettings:
     def allowed_formats(self) -> tuple[str, ...]:
         return tuple(self.values["upload_formats"].split(","))
 
+    @property
+    def reading_language_list(self) -> list[str]:
+        return self.values["reading_languages"].split(",")
+
     def permissions_of(self, role: str) -> frozenset[str]:
         if role not in self.role_permissions:
             return frozenset()
@@ -130,7 +143,7 @@ def load_runtime(session: Session, settings: Settings) -> RuntimeSettings:
     values = {}
     overridden = set()
     for option in OPTIONS:
-        default = getattr(settings, option.key)
+        default = convert(option, getattr(settings, option.key))
         if option.key in stored:
             try:
                 values[option.key] = convert(option, stored[option.key])
