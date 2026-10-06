@@ -223,7 +223,7 @@ def main() -> None:
             )
     output = Path(arguments.output)
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(markdown(results, environment()), encoding="utf-8")
+    output.write_text(markdown(results, environment()), encoding="utf-8", newline="\n")
     print(f"Relatório salvo em {output}")
 
 
