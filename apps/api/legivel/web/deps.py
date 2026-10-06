@@ -38,6 +38,14 @@ def engine_for(request: Request, device: str) -> OcrEngine:
     return override or get_ocr_engine(settings.ocr_engine, device, settings.ocr_model_dir, settings.ocr_languages)
 
 
+def pack_engines(request: Request, device: str) -> Callable[[str], OcrEngine]:
+    override = getattr(request.app.state, "ocr_engine", None)
+    if override is not None:
+        return lambda pack: override
+    settings = request.app.state.settings
+    return lambda pack: get_ocr_engine(settings.ocr_engine, device, settings.ocr_model_dir, settings.ocr_languages, pack)
+
+
 def get_engine(request: Request, runtime: RuntimeDep) -> OcrEngine:
     return engine_for(request, runtime.ocr_device)
 

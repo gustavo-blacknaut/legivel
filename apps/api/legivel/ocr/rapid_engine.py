@@ -10,7 +10,15 @@ from legivel.ocr.base import TextBox
 from legivel.ocr.devices import CUDA_PROVIDER, DIRECTML_PROVIDER, DeviceChoice
 
 DETECTION_SIDE_LIMIT = 1280
-RECOGNITION_MODELS = {"latin": "LATIN"}
+RECOGNITION_MODELS = {
+    "latin": "LATIN",
+    "cyrillic": "CYRILLIC",
+    "chinese": "CH",
+    "japanese": "JAPAN",
+    "korean": "KOREAN",
+    "arabic": "ARABIC",
+    "devanagari": "DEVANAGARI",
+}
 
 
 class EngineStatistics:
