@@ -5,6 +5,7 @@
 - Imagens de documentos (originais, processadas, miniaturas e recortes de foto, assinatura e polegar).
 - CPF, número do RG, registro da CNH, nomes, filiação, datas e naturalidade.
 - Texto bruto do OCR, que repete tudo isso.
+- Registros dos módulos: texto das páginas, boletos e notas com nomes, CPF e CNPJ, dados de cartão (titular, final, validade e, se ligado, o número completo).
 - Senhas, segredos de 2FA, tokens de sessão, convite, redefinição e envio remoto.
 
 ## Base legal e finalidade
@@ -55,6 +56,26 @@ Fora do escopo: comprometimento do sistema operacional do servidor, de quem tem 
 Situação em 05/10/2026: os 23 achados foram corrigidos, cada um em um commit próprio. Pontos que dependem de quem instala: ligar `LEGIVEL_PRODUCTION=true` em instalação exposta, guardar `secrets/` fora do servidor e agendar `scripts/backup.sh`.
 
 Itens conferidos sem problema: CSRF (cabeçalho obrigatório e SameSite=Strict), consultas só pelo ORM, paginação limitada a 100, tokens de convite e redefinição aleatórios, de uso único e guardados como hash, segredo do 2FA cifrado, permissões checadas no servidor em todas as rotas, retorno do login sem open redirect, nenhuma busca de URL externa (sem SSRF), nada sensível em `localStorage` ou em variáveis `NEXT_PUBLIC_`, imagens derivadas sem EXIF.
+
+## Módulos de leitura (06/10/2026)
+
+Revisão feita depois de trazer os módulos de livros, digitalização, finanças e cartões para a base do Identa.
+
+| # | Gravidade | Onde | Risco | Correção |
+| --- | --- | --- | --- | --- |
+| 24 | Alta | `security/rotation.py` | A troca de chave não recifrava registros, páginas e cartões: depois de aposentar a chave antiga esses dados ficariam ilegíveis. | Rotação cobre `records`, `record_pages`, `card_details` e as imagens das páginas. |
+| 25 | Média | `services/retention.py` | A retenção apagava documentos e mantinha os registros dos módulos para sempre. | Registros e imagens entram na mesma regra de dias. |
+| 26 | Média | `web/modules_routes.py` | A imagem original de um registro abria sem a permissão de ver originais. | Mesma checagem de `images.original` usada nos documentos. |
+| 27 | Baixa | `web/modules_routes.py` | Envio de registro não conferia o formato da imagem contra a lista configurada. | Mesma validação de tamanho, tipo real do arquivo e formatos aceitos dos documentos. |
+| 28 | Baixa | `web/modules_routes.py` | Falha no processamento gravava o traceback, que pode conter trechos do texto lido. | Log só com o módulo e o tipo do erro. |
+
+Decisões tomadas nesta parte:
+
+- `data` dos registros, texto e layout das páginas, titular e número do cartão ficam cifrados com a mesma chave dos documentos.
+- `search_text` fica em claro para a busca funcionar no banco. Sequências de quatro ou mais dígitos são mascaradas antes de gravar (sobram os três primeiros e os dois últimos), então CPF, contas e números de cartão não aparecem inteiros. Nomes e palavras do texto continuam pesquisáveis e, por isso, legíveis por quem tiver o banco.
+- Cartão: o CVV é removido das caixas do OCR antes de qualquer processamento e a imagem não é gravada. O número completo só é guardado com a opção ligada e com a criptografia ativa; a API recusa ligar a opção sem criptografia.
+- A exportação de um registro (PDF, TXT, Markdown) fica na auditoria com o formato.
+- Os registros não entram na exportação de dados de uma pessoa, porque não são ligados a um titular. Um pedido de titular que envolva registros precisa de busca manual em *Busca*.
 
 ## Fora desta rodada
 
