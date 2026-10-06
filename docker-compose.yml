@@ -118,7 +118,7 @@ services:
     mem_limit: ${LEGIVEL_WEB_MEMORY_LIMIT:-512m}
     pids_limit: 200
     ports:
-      - "${LEGIVEL_BIND:-127.0.0.1}:${LEGIVEL_PORT:-8090}:3000"
+      - "${LEGIVEL_BIND:-127.0.0.1}:${LEGIVEL_PORT:-8091}:3000"
     networks: [internal]
     depends_on:
       api:
@@ -137,8 +137,8 @@ services:
     tmpfs: [/tmp]
     mem_limit: 256m
     ports:
-      - "127.0.0.1:${MAILPIT_PORT:-8025}:8025"
-      - "127.0.0.1:${MAILPIT_SMTP_PORT:-1025}:1025"
+      - "127.0.0.1:${MAILPIT_PORT:-8026}:8025"
+      - "127.0.0.1:${MAILPIT_SMTP_PORT:-1026}:1025"
     networks: [internal]
     restart: unless-stopped
 

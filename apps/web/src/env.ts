@@ -2,8 +2,8 @@ import { z } from "zod";
 
 const schema = z.object({
   LEGIVEL_API_URL: z
-    .url({ message: "LEGIVEL_API_URL precisa ser uma URL completa, por exemplo http://127.0.0.1:8000" })
-    .default("http://127.0.0.1:8000")
+    .url({ message: "LEGIVEL_API_URL precisa ser uma URL completa, por exemplo http://127.0.0.1:8001" })
+    .default("http://127.0.0.1:8001")
     .transform((value) => value.replace(/\/+$/, "")),
 });
 

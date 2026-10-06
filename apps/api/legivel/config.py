@@ -117,7 +117,7 @@ class Settings(OcrSettings):
     @classmethod
     def public_url_is_absolute(cls, value: str) -> str:
         if value and not value.startswith(("http://", "https://")):
-            raise ValueError("precisa começar com http:// ou https://, por exemplo http://192.168.0.10:8090")
+            raise ValueError("precisa começar com http:// ou https://, por exemplo http://192.168.0.10:8091")
         return value.rstrip("/")
 
     @model_validator(mode="after")

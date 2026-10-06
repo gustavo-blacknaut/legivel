@@ -37,7 +37,7 @@ A coluna **Em execução** marca o que o administrador pode mudar em *Configura�
 | `LEGIVEL_SMTP_USER` / `LEGIVEL_SMTP_PASSWORD` | vazio | não | não | Credenciais, se o servidor exigir. |
 | `LEGIVEL_SMTP_FROM` | — | com SMTP | não | Remetente das mensagens. |
 
-Para desenvolvimento, `docker compose --profile dev up -d mailpit` sobe o [Mailpit](https://mailpit.axllent.org/) em `http://127.0.0.1:8025`. Use `LEGIVEL_SMTP_HOST=mailpit` (ou `127.0.0.1` fora do Docker com a porta 1025 publicada), `LEGIVEL_SMTP_PORT=1025` e `LEGIVEL_SMTP_SECURITY=none`.
+Para desenvolvimento, `docker compose --profile dev up -d mailpit` sobe o [Mailpit](https://mailpit.axllent.org/) em `http://127.0.0.1:8026`. Com a API no Docker, use `LEGIVEL_SMTP_HOST=mailpit` e `LEGIVEL_SMTP_PORT=1025`; com a API fora do Docker, `LEGIVEL_SMTP_HOST=127.0.0.1` e `LEGIVEL_SMTP_PORT=1026`. Nos dois casos, `LEGIVEL_SMTP_SECURITY=none`.
 
 ## OCR
 
@@ -116,18 +116,18 @@ A API confere a permissão em cada rota; a interface só esconde o que o papel n
 
 | Variável | Padrão | Obrigatória | Descrição |
 | --- | --- | --- | --- |
-| `LEGIVEL_API_URL` | `http://127.0.0.1:8000` | não | Endereço interno da API. O Next encaminha `/api/*` para ele (rewrites), então o navegador só fala com a origem da interface e não há CORS. É lido no `next build` e na execução; no Compose vale `http://api:8000`. |
+| `LEGIVEL_API_URL` | `http://127.0.0.1:8001` | não | Endereço interno da API. O Next encaminha `/api/*` para ele (rewrites), então o navegador só fala com a origem da interface e não há CORS. É lido no `next build` e na execução; no Compose vale `http://api:8000`. |
 
 ## Docker Compose
 
 | Variável | Padrão | Descrição |
 | --- | --- | --- |
 | `LEGIVEL_BIND` | `127.0.0.1` | Interface de rede em que a porta da interface é publicada. `0.0.0.0` libera para a rede local. |
-| `LEGIVEL_PORT` | `8090` | Porta da interface no host. A API, o PostgreSQL e o Mailpit não são publicados, exceto o painel do Mailpit em `127.0.0.1`. |
+| `LEGIVEL_PORT` | `8091` | Porta da interface no host. A API, o PostgreSQL e o Mailpit não são publicados, exceto o painel do Mailpit em `127.0.0.1`. |
 | `POSTGRES_DB`, `POSTGRES_USER` | `legivel`, `legivel` | Banco e dono criados no primeiro `up`. A senha do dono fica em `secrets/postgres_password`. |
 | `POSTGRES_APP_USER` | `legivel_app` | Usuário sem privilégios com que a API acessa o banco. Senha em `secrets/database_app_password`. |
 | `LEGIVEL_API_MEMORY_LIMIT`, `LEGIVEL_WEB_MEMORY_LIMIT`, `POSTGRES_MEMORY_LIMIT` | `3g`, `512m`, `1g` | Limite de memória de cada container. |
-| `MAILPIT_PORT` | `8025` | Porta do painel do Mailpit. |
+| `MAILPIT_PORT` | `8026` | Porta do painel do Mailpit. |
 
 ### Segredos
 

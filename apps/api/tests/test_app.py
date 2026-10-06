@@ -120,7 +120,7 @@ def test_production_refuses_insecure_settings(monkeypatch):
     monkeypatch.setenv("LEGIVEL_ENCRYPTION_KEY", generate_key())
     monkeypatch.setenv("LEGIVEL_SECRET_KEY", generate_key())
     monkeypatch.setenv("LEGIVEL_PRODUCTION", "true")
-    monkeypatch.setenv("LEGIVEL_PUBLIC_URL", "http://192.168.0.10:8090")
+    monkeypatch.setenv("LEGIVEL_PUBLIC_URL", "http://192.168.0.10:8091")
     with pytest.raises(ConfigurationError) as error:
         load_settings(_env_file=None)
     assert "LEGIVEL_SECURE_COOKIES=true" in str(error.value)

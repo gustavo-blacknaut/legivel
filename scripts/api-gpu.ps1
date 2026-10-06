@@ -1,6 +1,6 @@
 param(
     [string]$Python = "",
-    [int]$Port = 8000
+    [int]$Port = 8001
 )
 
 $ErrorActionPreference = "Stop"
@@ -39,7 +39,7 @@ foreach ($entry in $values.GetEnumerator()) {
 
 $user = if ($values["POSTGRES_USER"]) { $values["POSTGRES_USER"] } else { "legivel" }
 $database = if ($values["POSTGRES_DB"]) { $values["POSTGRES_DB"] } else { "legivel" }
-$pgPort = if ($values["POSTGRES_HOST_PORT"]) { $values["POSTGRES_HOST_PORT"] } else { "5432" }
+$pgPort = if ($values["POSTGRES_HOST_PORT"]) { $values["POSTGRES_HOST_PORT"] } else { "5436" }
 $password = [uri]::EscapeDataString($values["POSTGRES_PASSWORD"])
 $env:LEGIVEL_DATABASE_URL = "postgresql+psycopg://${user}:${password}@127.0.0.1:${pgPort}/${database}"
 $env:LEGIVEL_STORAGE_DIR = Join-Path $root "storage"
