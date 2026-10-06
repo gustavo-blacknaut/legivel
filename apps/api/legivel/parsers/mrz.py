@@ -74,3 +74,58 @@ def parse_td1(lines: list[str]) -> MrzData | None:
         given_names=given.replace("<", " ").strip(),
         checks_valid=checks_valid,
     )
+
+
+@dataclass(frozen=True)
+class PassportMrz:
+    raw: str
+    document_type: str
+    issuing_country: str
+    surname: str
+    given_names: str
+    passport_number: str
+    nationality: str
+    birth_date: date | None
+    sex: str
+    expiry_date: date | None
+    personal_number: str
+    checks_valid: bool
+
+
+def parse_td3(lines: list[str]) -> PassportMrz | None:
+    if len(lines) != 2:
+        return None
+    first, second = (line.ljust(44, "<")[:44] for line in lines)
+    if not first.startswith("P"):
+        return None
+    names = first[5:]
+    surname, _, given = names.partition("<<")
+    passport_number, birth, expiry, personal = second[0:9], second[13:19], second[21:27], second[28:42]
+    composite = second[0:10] + second[13:20] + second[21:43]
+    checks_valid = (
+        check_digit(passport_number) == second[9]
+        and check_digit(birth) == second[19]
+        and check_digit(expiry) == second[27]
+        and check_digit(personal) == (second[42] if second[42] != "<" else "0")
+        and check_digit(composite) == second[43]
+    )
+    return PassportMrz(
+        raw="\n".join(lines),
+        document_type=first[0:2].replace("<", ""),
+        issuing_country=first[2:5].replace("<", ""),
+        surname=surname.replace("<", " ").strip(),
+        given_names=given.replace("<", " ").strip(),
+        passport_number=passport_number.replace("<", ""),
+        nationality=second[10:13].replace("<", ""),
+        birth_date=parse_mrz_date(birth, future=False),
+        sex={"M": "Masculino", "F": "Feminino"}.get(second[20], "Não informado"),
+        expiry_date=parse_mrz_date(expiry, future=True),
+        personal_number=personal.replace("<", ""),
+        checks_valid=checks_valid,
+    )
+
+
+def find_td3_lines(boxes: list[TextBox]) -> list[str]:
+    candidates = [(box.y0, clean_mrz_line(box.text)) for box in boxes]
+    lines = [line for _, line in sorted(candidates) if len(line) >= 40 and line.count("<") >= 3]
+    return lines[-2:]
