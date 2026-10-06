@@ -1,7 +1,14 @@
 from legivel.parsers.base import DocumentParser
 
 _PARSERS: dict[str, DocumentParser] = {}
-BUILTIN_MODULES = ("legivel.parsers.cnh", "legivel.parsers.cpf", "legivel.parsers.rg")
+BUILTIN_MODULES = (
+    "legivel.parsers.cnh",
+    "legivel.parsers.cpf",
+    "legivel.parsers.rg",
+    "legivel.parsers.passport",
+    "legivel.parsers.voter",
+    "legivel.parsers.certificate",
+)
 
 
 def register(parser_class: type[DocumentParser]) -> type[DocumentParser]:
