@@ -220,3 +220,60 @@ class ScanLink(Base):
     used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     document_id: Mapped[int | None] = mapped_column(ForeignKey("documents.id", ondelete="SET NULL"))
+
+
+class Record(Base):
+    __tablename__ = "records"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    module: Mapped[str] = mapped_column(String(32), index=True)
+    kind: Mapped[str | None] = mapped_column(String(32))
+    title: Mapped[str | None] = mapped_column(String(200))
+    status: Mapped[str] = mapped_column(String(32), default=DocumentStatus.PENDING_REVIEW, index=True)
+    language: Mapped[str | None] = mapped_column(String(8))
+    confidence: Mapped[float | None] = mapped_column(Float)
+    data: Mapped[dict] = mapped_column(EncryptedJSON, default=dict)
+    field_confidence: Mapped[dict] = mapped_column(JSON, default=dict)
+    issues: Mapped[list] = mapped_column(JSON, default=list)
+    search_text: Mapped[str | None] = mapped_column(Text)
+    page_count: Mapped[int] = mapped_column(Integer, default=0)
+    created_by: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, index=True)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
+
+    pages: Mapped[list["RecordPage"]] = relationship(
+        back_populates="record", cascade="all, delete-orphan", order_by="RecordPage.page_number"
+    )
+    card: Mapped["CardDetail | None"] = relationship(back_populates="record", cascade="all, delete-orphan", uselist=False)
+
+
+class RecordPage(Base):
+    __tablename__ = "record_pages"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    record_id: Mapped[int] = mapped_column(ForeignKey("records.id", ondelete="CASCADE"), index=True)
+    page_number: Mapped[int] = mapped_column(Integer)
+    original_path: Mapped[str | None] = mapped_column(String(255))
+    processed_path: Mapped[str | None] = mapped_column(String(255))
+    thumbnail_path: Mapped[str | None] = mapped_column(String(255))
+    original_mime: Mapped[str | None] = mapped_column(String(64))
+    width: Mapped[int | None] = mapped_column(Integer)
+    height: Mapped[int | None] = mapped_column(Integer)
+    text: Mapped[str | None] = mapped_column(EncryptedText)
+    layout: Mapped[dict] = mapped_column(EncryptedJSON, default=dict)
+
+    record: Mapped[Record] = relationship(back_populates="pages")
+
+
+class CardDetail(Base):
+    __tablename__ = "card_details"
+
+    record_id: Mapped[int] = mapped_column(ForeignKey("records.id", ondelete="CASCADE"), primary_key=True)
+    brand: Mapped[str | None] = mapped_column(String(32))
+    last4: Mapped[str | None] = mapped_column(String(4))
+    holder_name: Mapped[str | None] = mapped_column(EncryptedText)
+    expiry: Mapped[str | None] = mapped_column(String(5))
+    luhn_valid: Mapped[bool] = mapped_column(Boolean, default=False)
+    full_number: Mapped[str | None] = mapped_column(EncryptedText)
+
+    record: Mapped[Record] = relationship(back_populates="card")
