@@ -204,3 +204,11 @@ def test_reading_order_single_column():
     layout = analyze_layout(boxes)
     assert layout.columns == 1
     assert layout.text == "linha um linha dois linha tres"
+
+
+def test_languages_follow_the_reading_settings(client):
+    login(client)
+    assert [item["code"] for item in client.get("/api/languages").json()] == ["pt", "en", "es"]
+    client.put("/api/settings", json={"values": {"reading_languages": "pt,ja"}})
+    assert [item["code"] for item in client.get("/api/languages").json()] == ["pt", "ja"]
+    assert client.put("/api/settings", json={"values": {"reading_languages": "pt,xx"}}).status_code == 400

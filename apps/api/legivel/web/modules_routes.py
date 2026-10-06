@@ -229,8 +229,9 @@ def modules(user: Viewer) -> list[ModuleOut]:
 
 
 @router.get("/languages")
-def languages(user: Viewer) -> list[LanguageOut]:
-    return [LanguageOut(code=language.code, name=language.name, pack=language.pack) for language in LANGUAGES.values()]
+def languages(user: Viewer, runtime: RuntimeDep) -> list[LanguageOut]:
+    enabled = runtime.reading_language_list
+    return [LanguageOut(code=item.code, name=item.name, pack=item.pack) for item in LANGUAGES.values() if item.code in enabled]
 
 
 @router.get("/records")
